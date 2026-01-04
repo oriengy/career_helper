@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package comment;
+
+option go_package = "app_server/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message Comment {
+  // 评论ID
+  string id = 1;
+  // 评论用户ID
+  string comment_user_id = 2;
+  // 评论内容
+  string content = 3;
+  // 消息ID
+  string message_id = 4;
+  // 父评论ID，用于回复功能
+  string parent_id = 5;
+  // 评论类型
+  string comment_type = 6;
+
+  // 创建时间
+  google.protobuf.Timestamp created_at = 21;
+  // 更新时间
+  google.protobuf.Timestamp updated_at = 22;
+}

@@ -1,0 +1,285 @@
+syntax = "proto3";
+
+package message;
+option go_package = "app_server/proto/message";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+// ChatMessage 统一的消息实体，移除了 profile_id
+message ChatMessage {
+  string id = 1;
+  string user_id = 2;
+  string session_id = 3;
+  string parent_id = 4;
+  string role = 5;           // SELF, FRIEND, USER, AI.
+  string msg_type = 6;       // HISTORY, CONSULT, TRANSLATE.
+  string content = 7;
+  repeated string tags = 8;
+  google.protobuf.Timestamp msg_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  optional string translate_content = 12;
+}
+
+// 统一的消息服务
+service ChatMessageService {
+  // 查询消息列表 - 合并原来的 ListConsultMessages 和 ListFriendMessages
+  // POST /message.ChatMessageService/ListChatMessages
+  rpc ListChatMessages(ListChatMessagesRequest) returns (ListChatMessagesResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/ListChatMessages"
+      body: "*"
+    };
+  }
+  
+  // 创建消息 - 合并原来的 SendConsultMessage 和 CreateFriendMessage
+  // POST /message.ChatMessageService/CreateChatMessage
+  rpc CreateChatMessage(CreateChatMessageRequest) returns (CreateChatMessageResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/CreateChatMessage"
+      body: "*"
+    };
+  }
+  
+  // 更新消息
+  // POST /message.ChatMessageService/UpdateChatMessage
+  rpc UpdateChatMessage(UpdateChatMessageRequest) returns (UpdateChatMessageResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/UpdateChatMessage"
+      body: "*"
+    };
+  }
+  
+  // 删除消息 - 合并原来的 RecallConsultMessage 和 DeleteFriendMessage
+  // POST /message.ChatMessageService/DeleteChatMessage
+  rpc DeleteChatMessage(DeleteChatMessageRequest) returns (DeleteChatMessageResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/DeleteChatMessage"
+      body: "*"
+    };
+  }
+  
+  // 发送咨询消息 - 专门用于AI咨询回复
+  // POST /message.ChatMessageService/SendConsultMessage
+  rpc SendConsultMessage(SendConsultMessageRequest) returns (SendConsultMessageResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/SendConsultMessage"
+      body: "*"
+    };
+  }
+  
+  // 解析图片中的消息（保留原功能）
+  // POST /message.ChatMessageService/ParseImageMessages
+  rpc ParseImageMessages(ParseImageMessagesRequest) returns (ParseImageMessagesResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/ParseImageMessages"
+      body: "*"
+    };
+  }
+
+  // 用户反馈 点赞/踩/评论
+  // POST /message.ChatMessageService/FeedbackToMessage
+  rpc FeedbackToMessage(FeedbackToMessageRequest) returns (FeedbackToMessageResponse) {
+    option (google.api.http) = {
+      post: "/message.ChatMessageService/FeedbackToMessage"
+      body: "*"
+    };
+  }
+}
+
+// 查询消息请求 - 支持多种过滤条件
+message ListChatMessagesRequest {
+  // 过滤条件
+  string session_id = 1;      // 按会话ID过滤（必填）
+  string msg_type = 2;        // 按消息类型过滤（可选）
+  repeated string roles = 3;   // 按角色过滤（可选）
+  repeated string ids = 4;     // 按ID列表过滤（可选）
+  repeated string parent_ids = 5; // 按父消息ID过滤（可选）
+  
+  // 分页参数
+  int32 page_size = 21;
+  string page_token = 22;
+}
+
+message ListChatMessagesResponse {
+  repeated ChatMessage messages = 1;
+  string next_page_token = 2;
+}
+
+// 创建消息请求
+message CreateChatMessageRequest {
+  repeated ChatMessage messages = 1;
+}
+
+message CreateChatMessageResponse {
+  repeated ChatMessage messages = 1;
+}
+
+// 更新消息请求
+message UpdateChatMessageRequest {
+  repeated ChatMessage messages = 1;
+}
+
+message UpdateChatMessageResponse {
+  repeated ChatMessage messages = 1;
+}
+
+// 删除消息请求
+message DeleteChatMessageRequest {
+  repeated string ids = 1;
+}
+
+message DeleteChatMessageResponse {
+  int32 deleted_count = 1;  // 返回删除的数量
+}
+
+// 发送咨询消息请求
+message SendConsultMessageRequest {
+  string session_id = 1;      // 会话ID
+  string content = 2;         // 咨询内容
+  // optional string mention_id = 3;      // 提及消息ID
+  optional string target_id = 4;       // 目标消息ID regenerate时使用
+}
+
+message SendConsultMessageResponse {
+  ChatMessage consult = 1;    // 创建的咨询消息
+  ChatMessage reply = 2;      // 回复的消息
+}
+
+// 解析图片消息请求（保持不变）
+message ParseImageMessagesRequest {
+  string session_id = 1;  // 改为 session_id，不再需要 profile_id
+  string image_url = 2;
+}
+
+message ParseImageMessagesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated ChatMessage messages = 3;
+}
+
+// 用户反馈 点赞/踩/评论
+message FeedbackToMessageRequest {
+  string session_id = 1; // 会话ID
+  string message_id = 2; // 消息ID
+  string attitude = 3; // 态度: up, down
+  string feedback = 4; // 文字反馈内容
+  repeated string tags = 5; // 标签
+}
+
+message FeedbackToMessageResponse {
+  bool success = 1;
+}
+
+// 为了向后兼容，保留旧的服务定义但标记为已废弃
+service ConsultMessageService {
+  option deprecated = true;
+  rpc ListConsultMessages(ListConsultMessagesRequest) returns (ListConsultMessagesResponse) {}
+  rpc SendConsultMessage(SendConsultMessageRequest) returns (SendConsultMessageResponse) {}
+  rpc RecallConsultMessage(RecallConsultMessageRequest) returns (RecallConsultMessageResponse) {}
+}
+
+service FriendMessageService {
+  option deprecated = true;
+  rpc ListFriendMessages(ListFriendMessagesRequest) returns (ListFriendMessagesResponse) {}
+  rpc CreateFriendMessage(CreateFriendMessageRequest) returns (CreateFriendMessageResponse) {}
+  rpc UpdateFriendMessage(UpdateFriendMessageRequest) returns (UpdateFriendMessageResponse) {}
+  rpc DeleteFriendMessage(DeleteFriendMessageRequest) returns (DeleteFriendMessageResponse) {}
+  rpc ParseImageMessages(ParseImageMessagesRequest) returns (ParseImageMessagesResponse) {}
+}
+
+// 保留旧的消息类型定义以向后兼容
+message ConsultMessage {
+  option deprecated = true;
+  string id = 1;
+  string user_id = 2;
+  string session_id = 3;
+  string parent_id = 4;
+  string profile_id = 5;
+  string role = 6;
+  string msg_type = 7;
+  string content = 8;
+  repeated string tags = 9;
+  google.protobuf.Timestamp msg_at = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// 保留旧的请求/响应消息以向后兼容
+message ListConsultMessagesRequest {
+  option deprecated = true;
+  string msg_type = 1;
+  repeated string ids = 2;
+  repeated string session_ids = 3;
+  repeated string parent_ids = 4;
+  int32 page_size = 21;
+  string page_token = 22;
+}
+
+message ListConsultMessagesResponse {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+  string next_page_token = 2;
+}
+
+message UpdateConsultMessageRequest {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message UpdateConsultMessageResponse {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message RecallConsultMessageRequest {
+  option deprecated = true;
+  repeated string ids = 1;
+}
+
+message RecallConsultMessageResponse {
+  option deprecated = true;
+}
+
+message ListFriendMessagesRequest {
+  option deprecated = true;
+  string profile_id = 1;
+  int32 page_size = 21;
+  string page_token = 22;
+}
+
+message ListFriendMessagesResponse {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+  string next_page_token = 2;
+}
+
+message CreateFriendMessageRequest {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message CreateFriendMessageResponse {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message UpdateFriendMessageRequest {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message UpdateFriendMessageResponse {
+  option deprecated = true;
+  repeated ConsultMessage messages = 1;
+}
+
+message DeleteFriendMessageRequest {
+  option deprecated = true;
+  repeated string ids = 1;
+}
+
+message DeleteFriendMessageResponse {
+  option deprecated = true;
+}

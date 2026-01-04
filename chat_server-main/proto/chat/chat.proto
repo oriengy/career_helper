@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package chat;
+option go_package = "app_server/proto/chat";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+service ChatService {
+  // POST /chat.ChatService/ListChatSessions
+  rpc ListChatSessions(ListChatSessionsRequest) returns (ListChatSessionsResponse) {
+    option (google.api.http) = {
+      post: "/chat.ChatService/ListChatSessions"
+      body: "*"
+    };
+  }
+  // POST /chat.ChatService/CreateChatSession
+  rpc CreateChatSession(CreateChatSessionRequest) returns (CreateChatSessionResponse) {
+    option (google.api.http) = {
+      post: "/chat.ChatService/CreateChatSession"
+      body: "*"
+    };
+  }
+  // POST /chat.ChatService/DeleteChatSession
+  rpc DeleteChatSession(DeleteChatSessionRequest) returns (DeleteChatSessionResponse) {
+    option (google.api.http) = {
+      post: "/chat.ChatService/DeleteChatSession"
+      body: "*"
+    };
+  }
+  // POST /chat.ChatService/UpdateChatSession
+  rpc UpdateChatSession(UpdateChatSessionRequest) returns (UpdateChatSessionResponse) {
+    option (google.api.http) = {
+      post: "/chat.ChatService/UpdateChatSession"
+      body: "*"
+    };
+  }
+}
+
+message ChatSession {
+  // 聊天会话ID
+  string id = 1;
+  // 用户ID
+  string user_id = 2;
+  // 个人资料ID
+  string profile_id = 3;
+  // 名称
+  string name = 4;
+  // 头像
+  string avatar = 5;
+  // 创建时间
+  google.protobuf.Timestamp created_at = 6;
+  // 更新时间
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message ListChatSessionsRequest {
+  // 分页
+  string page_token = 1;
+  // 每页大小
+  int32 page_size = 2;
+}
+
+message ListChatSessionsResponse {
+  repeated ChatSession data = 1;
+  // 下一页
+  string next_page_token = 2;
+}
+
+message CreateChatSessionRequest {
+  // 名称
+  string name = 1;
+  // 头像
+  string avatar = 2;
+  // 个人资料信息 创建对话时 快速创建个人资料
+  optional ProfileShort profile = 3;
+}
+
+message ProfileShort {
+  // 个人资料名称
+  string name = 1;
+  // 个人资料IM名称
+  optional string im_name = 2;
+  // 个人资料头像
+  optional string avatar = 3;
+  // 个人资料性别
+  optional string gender = 4;
+  // 个人资料生日
+  optional google.protobuf.Timestamp birthday = 5;
+}
+
+message CreateChatSessionResponse {
+  // 聊天会话
+  ChatSession chat_session = 1;
+}
+
+message DeleteChatSessionRequest {
+  // 聊天会话ID
+  string id = 1;
+}
+
+message DeleteChatSessionResponse {}
+
+message UpdateChatSessionRequest {
+  // 聊天会话ID
+  string id = 1;
+  // 名称
+  string name = 2;
+  // 头像
+  string avatar = 3;
+}
+
+message UpdateChatSessionResponse {
+  ChatSession chat_session = 1;
+}

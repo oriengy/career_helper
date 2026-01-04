@@ -1,0 +1,22 @@
+version: v1
+plugins:
+  - name: go
+    out: app_server
+    opt:
+      - paths=source_relative
+      - Mproto/chat/chat.proto=app_server/proto/chat
+      - Mproto/message/message.proto=app_server/proto/message
+      - Mproto/post.proto=app_server/proto
+      - Mproto/comment.proto=app_server/proto
+      - Mproto/profile/profile.proto=app_server/proto/profile
+      - Mproto/user/user.proto=app_server/proto/user
+      - Mproto/translate/translate.proto=app_server/proto/translate
+      - Mproto/config/config.proto=app_server/proto/config
+  - name: connect-go
+    out: app_server
+    opt: paths=source_relative
+  - plugin: buf.build/grpc-ecosystem/openapiv2
+    out: docs/swagger
+    opt:
+      - allow_merge=true
+      - merge_file_name=chat_server

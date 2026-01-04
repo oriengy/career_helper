@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package user;
+option go_package = "app_server/proto/user";
+
+import "google/protobuf/timestamp.proto";
+import "proto/profile/profile.proto";
+import "google/api/annotations.proto";
+
+message User {
+  string id = 1;
+  string name = 2;
+  string im_name = 3;
+  string external_id = 4;
+  string phone = 5;
+  string avatar = 6;
+  string profile_id = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+service UserService {
+  // POST /user.UserService/WxUserLogin
+  rpc WxUserLogin(WxUserLoginRequest) returns (WxUserLoginResponse) {
+    option (google.api.http) = {
+      post: "/user.UserService/WxUserLogin"
+      body: "*"
+    };
+  }
+  // POST /user.UserService/PhoneLogin
+  rpc PhoneLogin(PhoneLoginRequest) returns (PhoneLoginResponse) {
+    option (google.api.http) = {
+      post: "/user.UserService/PhoneLogin"
+      body: "*"
+    };
+  }
+  // POST /user.UserService/GetUserProfile
+  rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse) {
+    option (google.api.http) = {
+      post: "/user.UserService/GetUserProfile"
+      body: "*"
+    };
+  }
+}
+
+message WxUserLoginRequest {
+  string app = 1;
+  string code = 2;
+}
+
+message WxUserLoginResponse {
+  string token = 1;
+}
+
+message GetUserProfileRequest {}
+
+message GetUserProfileResponse {
+  User user = 1;
+  profile.Profile profile = 2;
+}
+
+message PhoneLoginRequest {
+  string phone = 1;
+  string verification_code = 2;
+}
+
+message PhoneLoginResponse {
+  string token = 1;
+}

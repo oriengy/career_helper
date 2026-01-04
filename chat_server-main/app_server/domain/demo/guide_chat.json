@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1000,
+        "role": "AI",
+        "msg_type": "CONSULT",
+        "content": "你好呀，你创建了一个新会话"
+    },
+    {
+        "id": 1001,
+        "role": "AI",
+        "msg_type": "CONSULT",
+        "content": "你可以点击“解析聊天截图”导入聊天记录，点击“译”就可以进行翻译和解读啦"
+    },
+    {
+        "id": 1002,
+        "role": "FRIEND",
+        "msg_type": "HISTORY",
+        "content": "⬅️点击朋友的头像，可以修改朋友资料，AI了解更多信息就给出更精准的分析和建议哦"
+    },
+    {
+        "id": 1003,
+        "role": "SELF",
+        "msg_type": "HISTORY",
+        "content": "也可以修改自己的资料，在多个会话中共享➡️"
+    },
+    {
+        "id": 1004,
+        "role": "AI",
+        "msg_type": "CONSULT",
+        "content": "有什么情感问题都可以发消息问我哦（开始使用后，这些消息会消失）"
+    }
+]

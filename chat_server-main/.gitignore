@@ -1,0 +1,6 @@
+.vscode
+config*.yaml
+output/
+node_modules/
+.next/
+__debug*

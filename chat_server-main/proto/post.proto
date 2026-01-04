@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package post;
+option go_package = "app_server/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message Post {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string user_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

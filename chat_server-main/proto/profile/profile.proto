@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package profile;
+
+option go_package = "app_server/proto/profile";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+message Property {
+  string name = 1;
+  string value = 2;
+}
+
+message Profile {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string im_name = 4;
+  string avatar = 5;
+  int32 age = 6;
+  string gender = 7;
+  google.protobuf.Timestamp birthday = 8;
+  string birth_location = 9;
+  string current_location = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  string avatar_file_id = 13;  // 头像文件ID
+  string intro = 14;  // 个人简介
+  repeated Property custom = 15;  // 自定义属性
+}
+
+service ProfileService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
+    option (google.api.http) = {
+      post: "/profile.ProfileService/GetProfile"
+      body: "*"
+    };
+  }
+  rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse) {
+    option (google.api.http) = {
+      post: "/profile.ProfileService/ListProfiles"
+      body: "*"
+    };
+  }
+  rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse) {
+    option (google.api.http) = {
+      post: "/profile.ProfileService/CreateProfile"
+      body: "*"
+    };
+  }
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse) {
+    option (google.api.http) = {
+      post: "/profile.ProfileService/UpdateProfile"
+      body: "*"
+    };
+  }
+  rpc DeleteProfile(DeleteProfileRequest) returns (DeleteProfileResponse) {
+    option (google.api.http) = {
+      post: "/profile.ProfileService/DeleteProfile"
+      body: "*"
+    };
+  }
+}
+
+message GetProfileRequest {
+  string id = 1;
+}
+
+message GetProfileResponse {
+  Profile profile = 1;
+}
+
+message ListProfilesRequest {
+  // 搜索名称
+  string search_name = 1;
+  // id
+  repeated string ids = 2;
+
+  // 分页
+  string page_token = 21;
+  // 每页大小
+  string page_size = 22;
+}
+
+message ListProfilesResponse {
+  repeated Profile profiles = 1;
+  string next_page_token = 2;
+}
+
+message CreateProfileRequest {
+  string name = 1;
+  string im_name = 2;
+  string avatar = 3;
+  string profile = 4;  // 保留以兼容旧版本
+  string gender = 5;
+  int32 age = 6;
+  string intro = 7;
+  repeated Property custom = 8;
+}
+
+message CreateProfileResponse {
+  Profile profile = 1;
+}
+
+message UpdateProfileRequest {
+  string id = 1;
+  string name = 2;
+  string im_name = 3;
+  string avatar = 4;
+  string profile = 5;  // 保留以兼容旧版本
+  string gender = 6;  // 性别字段 (male/female)
+  string avatar_file_id = 7;  // 头像文件ID
+  int32 age = 8;
+  string intro = 9;
+  repeated Property custom = 10;
+}
+
+message UpdateProfileResponse {
+  Profile profile = 1;
+}
+
+message DeleteProfileRequest {
+  string id = 1;
+}
+
+message DeleteProfileResponse {}

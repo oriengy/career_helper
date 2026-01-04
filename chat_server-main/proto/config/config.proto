@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package config;
+option go_package = "app_server/proto/config";
+
+import "google/api/annotations.proto";
+
+message Config {
+  string key = 1;
+  string value = 2;
+}
+
+service ConfigService {
+  // POST /config.ConfigService/GetConfig
+  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse) {
+    option (google.api.http) = {
+      post: "/config.ConfigService/GetConfig"
+      body: "*"
+    };
+  }
+}
+
+message GetConfigRequest {
+  repeated string keys = 1;
+  string app = 2;
+  string platform = 3;
+  string env = 4;
+  string version = 5;
+}
+
+message GetConfigResponse {
+  repeated Config configs = 1;
+}

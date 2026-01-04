@@ -1,0 +1,1690 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "proto/chat/chat.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ChatService"
+    },
+    {
+      "name": "ConfigService"
+    },
+    {
+      "name": "ChatMessageService"
+    },
+    {
+      "name": "ConsultMessageService"
+    },
+    {
+      "name": "FriendMessageService"
+    },
+    {
+      "name": "ProfileService"
+    },
+    {
+      "name": "TranslateService"
+    },
+    {
+      "name": "UserService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/chat.ChatService/CreateChatSession": {
+      "post": {
+        "summary": "POST /chat.ChatService/CreateChatSession",
+        "operationId": "ChatService_CreateChatSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/chatCreateChatSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/chatCreateChatSessionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatService"
+        ]
+      }
+    },
+    "/chat.ChatService/DeleteChatSession": {
+      "post": {
+        "summary": "POST /chat.ChatService/DeleteChatSession",
+        "operationId": "ChatService_DeleteChatSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/chatDeleteChatSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/chatDeleteChatSessionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatService"
+        ]
+      }
+    },
+    "/chat.ChatService/ListChatSessions": {
+      "post": {
+        "summary": "POST /chat.ChatService/ListChatSessions",
+        "operationId": "ChatService_ListChatSessions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/chatListChatSessionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/chatListChatSessionsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatService"
+        ]
+      }
+    },
+    "/chat.ChatService/UpdateChatSession": {
+      "post": {
+        "summary": "POST /chat.ChatService/UpdateChatSession",
+        "operationId": "ChatService_UpdateChatSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/chatUpdateChatSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/chatUpdateChatSessionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatService"
+        ]
+      }
+    },
+    "/config.ConfigService/GetConfig": {
+      "post": {
+        "summary": "POST /config.ConfigService/GetConfig",
+        "operationId": "ConfigService_GetConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/configGetConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/configGetConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ConfigService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/CreateChatMessage": {
+      "post": {
+        "summary": "创建消息 - 合并原来的 SendConsultMessage 和 CreateFriendMessage\nPOST /message.ChatMessageService/CreateChatMessage",
+        "operationId": "ChatMessageService_CreateChatMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageCreateChatMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageCreateChatMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/DeleteChatMessage": {
+      "post": {
+        "summary": "删除消息 - 合并原来的 RecallConsultMessage 和 DeleteFriendMessage\nPOST /message.ChatMessageService/DeleteChatMessage",
+        "operationId": "ChatMessageService_DeleteChatMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageDeleteChatMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageDeleteChatMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/FeedbackToMessage": {
+      "post": {
+        "summary": "用户反馈 点赞/踩/评论\nPOST /message.ChatMessageService/FeedbackToMessage",
+        "operationId": "ChatMessageService_FeedbackToMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageFeedbackToMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageFeedbackToMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/ListChatMessages": {
+      "post": {
+        "summary": "查询消息列表 - 合并原来的 ListConsultMessages 和 ListFriendMessages\nPOST /message.ChatMessageService/ListChatMessages",
+        "operationId": "ChatMessageService_ListChatMessages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageListChatMessagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageListChatMessagesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/ParseImageMessages": {
+      "post": {
+        "summary": "解析图片中的消息（保留原功能）\nPOST /message.ChatMessageService/ParseImageMessages",
+        "operationId": "ChatMessageService_ParseImageMessages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageParseImageMessagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageParseImageMessagesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/SendConsultMessage": {
+      "post": {
+        "summary": "发送咨询消息 - 专门用于AI咨询回复\nPOST /message.ChatMessageService/SendConsultMessage",
+        "operationId": "ChatMessageService_SendConsultMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageSendConsultMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageSendConsultMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/message.ChatMessageService/UpdateChatMessage": {
+      "post": {
+        "summary": "更新消息\nPOST /message.ChatMessageService/UpdateChatMessage",
+        "operationId": "ChatMessageService_UpdateChatMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messageUpdateChatMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messageUpdateChatMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ChatMessageService"
+        ]
+      }
+    },
+    "/profile.ProfileService/CreateProfile": {
+      "post": {
+        "operationId": "ProfileService_CreateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileCreateProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileCreateProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/profile.ProfileService/DeleteProfile": {
+      "post": {
+        "operationId": "ProfileService_DeleteProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileDeleteProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileDeleteProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/profile.ProfileService/GetProfile": {
+      "post": {
+        "operationId": "ProfileService_GetProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileGetProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileGetProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/profile.ProfileService/ListProfiles": {
+      "post": {
+        "operationId": "ProfileService_ListProfiles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileListProfilesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileListProfilesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/profile.ProfileService/UpdateProfile": {
+      "post": {
+        "operationId": "ProfileService_UpdateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileUpdateProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileUpdateProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/translate.TranslateService/Translate": {
+      "post": {
+        "operationId": "TranslateService_Translate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/translateTranslateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/translateTranslateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TranslateService"
+        ]
+      }
+    },
+    "/translate.TranslateService/TranslateFriendMessage": {
+      "post": {
+        "operationId": "TranslateService_TranslateFriendMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/translateTranslateFriendMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/translateTranslateFriendMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TranslateService"
+        ]
+      }
+    },
+    "/translate.TranslateService/TranslateV2": {
+      "post": {
+        "operationId": "TranslateService_TranslateV2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/translateTranslateV2Response"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/translateTranslateV2Request"
+            }
+          }
+        ],
+        "tags": [
+          "TranslateService"
+        ]
+      }
+    },
+    "/user.UserService/GetUserProfile": {
+      "post": {
+        "summary": "POST /user.UserService/GetUserProfile",
+        "operationId": "UserService_GetUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userGetUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userGetUserProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user.UserService/PhoneLogin": {
+      "post": {
+        "summary": "POST /user.UserService/PhoneLogin",
+        "operationId": "UserService_PhoneLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userPhoneLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userPhoneLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user.UserService/WxUserLogin": {
+      "post": {
+        "summary": "POST /user.UserService/WxUserLogin",
+        "operationId": "UserService_WxUserLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userWxUserLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userWxUserLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "chatChatSession": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "聊天会话ID"
+        },
+        "userId": {
+          "type": "string",
+          "title": "用户ID"
+        },
+        "profileId": {
+          "type": "string",
+          "title": "个人资料ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "名称"
+        },
+        "avatar": {
+          "type": "string",
+          "title": "头像"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "创建时间"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "更新时间"
+        }
+      }
+    },
+    "chatCreateChatSessionRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "名称"
+        },
+        "avatar": {
+          "type": "string",
+          "title": "头像"
+        },
+        "profile": {
+          "$ref": "#/definitions/chatProfileShort",
+          "title": "个人资料信息 创建对话时 快速创建个人资料"
+        }
+      }
+    },
+    "chatCreateChatSessionResponse": {
+      "type": "object",
+      "properties": {
+        "chatSession": {
+          "$ref": "#/definitions/chatChatSession",
+          "title": "聊天会话"
+        }
+      }
+    },
+    "chatDeleteChatSessionRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "聊天会话ID"
+        }
+      }
+    },
+    "chatDeleteChatSessionResponse": {
+      "type": "object"
+    },
+    "chatListChatSessionsRequest": {
+      "type": "object",
+      "properties": {
+        "pageToken": {
+          "type": "string",
+          "title": "分页"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "每页大小"
+        }
+      }
+    },
+    "chatListChatSessionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/chatChatSession"
+          }
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "下一页"
+        }
+      }
+    },
+    "chatProfileShort": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "个人资料名称"
+        },
+        "imName": {
+          "type": "string",
+          "title": "个人资料IM名称"
+        },
+        "avatar": {
+          "type": "string",
+          "title": "个人资料头像"
+        },
+        "gender": {
+          "type": "string",
+          "title": "个人资料性别"
+        },
+        "birthday": {
+          "type": "string",
+          "format": "date-time",
+          "title": "个人资料生日"
+        }
+      }
+    },
+    "chatUpdateChatSessionRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "聊天会话ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "名称"
+        },
+        "avatar": {
+          "type": "string",
+          "title": "头像"
+        }
+      }
+    },
+    "chatUpdateChatSessionResponse": {
+      "type": "object",
+      "properties": {
+        "chatSession": {
+          "$ref": "#/definitions/chatChatSession"
+        }
+      }
+    },
+    "configConfig": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "configGetConfigRequest": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "app": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "configGetConfigResponse": {
+      "type": "object",
+      "properties": {
+        "configs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/configConfig"
+          }
+        }
+      }
+    },
+    "messageChatMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "description": "SELF, FRIEND, USER, AI."
+        },
+        "msgType": {
+          "type": "string",
+          "description": "HISTORY, CONSULT, TRANSLATE."
+        },
+        "content": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "msgAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "translateContent": {
+          "type": "string"
+        }
+      },
+      "title": "ChatMessage 统一的消息实体，移除了 profile_id"
+    },
+    "messageCreateChatMessageRequest": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        }
+      },
+      "title": "创建消息请求"
+    },
+    "messageCreateChatMessageResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        }
+      }
+    },
+    "messageDeleteChatMessageRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "删除消息请求"
+    },
+    "messageDeleteChatMessageResponse": {
+      "type": "object",
+      "properties": {
+        "deletedCount": {
+          "type": "integer",
+          "format": "int32",
+          "title": "返回删除的数量"
+        }
+      }
+    },
+    "messageFeedbackToMessageRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "title": "会话ID"
+        },
+        "messageId": {
+          "type": "string",
+          "title": "消息ID"
+        },
+        "attitude": {
+          "type": "string",
+          "title": "态度: up, down"
+        },
+        "feedback": {
+          "type": "string",
+          "title": "文字反馈内容"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "标签"
+        }
+      },
+      "title": "用户反馈 点赞/踩/评论"
+    },
+    "messageFeedbackToMessageResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "messageListChatMessagesRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "按会话ID过滤（必填）",
+          "title": "过滤条件"
+        },
+        "msgType": {
+          "type": "string",
+          "title": "按消息类型过滤（可选）"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "按角色过滤（可选）"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "按ID列表过滤（可选）"
+        },
+        "parentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "按父消息ID过滤（可选）"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "分页参数"
+        },
+        "pageToken": {
+          "type": "string"
+        }
+      },
+      "title": "查询消息请求 - 支持多种过滤条件"
+    },
+    "messageListChatMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "messageParseImageMessagesRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "title": "改为 session_id，不再需要 profile_id"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      },
+      "title": "解析图片消息请求（保持不变）"
+    },
+    "messageParseImageMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        }
+      }
+    },
+    "messageSendConsultMessageRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "title": "会话ID"
+        },
+        "content": {
+          "type": "string",
+          "title": "咨询内容"
+        },
+        "targetId": {
+          "type": "string",
+          "description": "目标消息ID regenerate时使用",
+          "title": "optional string mention_id = 3;      // 提及消息ID"
+        }
+      },
+      "title": "发送咨询消息请求"
+    },
+    "messageSendConsultMessageResponse": {
+      "type": "object",
+      "properties": {
+        "consult": {
+          "$ref": "#/definitions/messageChatMessage",
+          "title": "创建的咨询消息"
+        },
+        "reply": {
+          "$ref": "#/definitions/messageChatMessage",
+          "title": "回复的消息"
+        }
+      }
+    },
+    "messageUpdateChatMessageRequest": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        }
+      },
+      "title": "更新消息请求"
+    },
+    "messageUpdateChatMessageResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messageChatMessage"
+          }
+        }
+      }
+    },
+    "profileCreateProfileRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "imName": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string",
+          "title": "保留以兼容旧版本"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "intro": {
+          "type": "string"
+        },
+        "custom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/profileProperty"
+          }
+        }
+      }
+    },
+    "profileCreateProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/profileProfile"
+        }
+      }
+    },
+    "profileDeleteProfileRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "profileDeleteProfileResponse": {
+      "type": "object"
+    },
+    "profileGetProfileRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "profileGetProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/profileProfile"
+        }
+      }
+    },
+    "profileListProfilesRequest": {
+      "type": "object",
+      "properties": {
+        "searchName": {
+          "type": "string",
+          "title": "搜索名称"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "id"
+        },
+        "pageToken": {
+          "type": "string",
+          "title": "分页"
+        },
+        "pageSize": {
+          "type": "string",
+          "title": "每页大小"
+        }
+      }
+    },
+    "profileListProfilesResponse": {
+      "type": "object",
+      "properties": {
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/profileProfile"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "profileProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "imName": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "birthday": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "birthLocation": {
+          "type": "string"
+        },
+        "currentLocation": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "avatarFileId": {
+          "type": "string",
+          "title": "头像文件ID"
+        },
+        "intro": {
+          "type": "string",
+          "title": "个人简介"
+        },
+        "custom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/profileProperty"
+          },
+          "title": "自定义属性"
+        }
+      }
+    },
+    "profileProperty": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "profileUpdateProfileRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "imName": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string",
+          "title": "保留以兼容旧版本"
+        },
+        "gender": {
+          "type": "string",
+          "title": "性别字段 (male/female)"
+        },
+        "avatarFileId": {
+          "type": "string",
+          "title": "头像文件ID"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "intro": {
+          "type": "string"
+        },
+        "custom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/profileProperty"
+          }
+        }
+      }
+    },
+    "profileUpdateProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/profileProfile"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "translateTranslateFriendMessageRequest": {
+      "type": "object",
+      "properties": {
+        "friendMessageId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      }
+    },
+    "translateTranslateFriendMessageResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "translateTranslateRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "history": {
+          "type": "string"
+        }
+      }
+    },
+    "translateTranslateResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "translateTranslateV2Request": {
+      "type": "object",
+      "properties": {
+        "chatSessionId": {
+          "type": "string"
+        },
+        "targetMessageId": {
+          "type": "string"
+        }
+      }
+    },
+    "translateTranslateV2Response": {
+      "type": "object",
+      "properties": {
+        "newMessageId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "userGetUserProfileRequest": {
+      "type": "object"
+    },
+    "userGetUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/userUser"
+        },
+        "profile": {
+          "$ref": "#/definitions/profileProfile"
+        }
+      }
+    },
+    "userPhoneLoginRequest": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string"
+        },
+        "verificationCode": {
+          "type": "string"
+        }
+      }
+    },
+    "userPhoneLoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "userUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "imName": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "userWxUserLoginRequest": {
+      "type": "object",
+      "properties": {
+        "app": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "userWxUserLoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

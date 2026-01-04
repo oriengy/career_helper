@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package translate;
+
+option go_package = "app_server/proto/translate";
+
+import "google/api/annotations.proto";
+
+service TranslateService {
+  rpc Translate(TranslateRequest) returns (TranslateResponse) {
+    option (google.api.http) = {
+      post: "/translate.TranslateService/Translate"
+      body: "*"
+    };
+  }
+  rpc TranslateFriendMessage(TranslateFriendMessageRequest) returns (TranslateFriendMessageResponse) {
+    option (google.api.http) = {
+      post: "/translate.TranslateService/TranslateFriendMessage"
+      body: "*"
+    };
+  }
+  rpc TranslateV2(TranslateV2Request) returns (TranslateV2Response) {
+    option (google.api.http) = {
+      post: "/translate.TranslateService/TranslateV2"
+      body: "*"
+    };
+  }
+}
+
+message TranslateRequest {
+  string content = 1;
+  string from = 2;
+  string to = 3;
+  string history = 4;
+}
+
+message TranslateResponse {
+  string content = 1;
+}
+
+message TranslateFriendMessageRequest {
+  string friend_message_id = 1;
+  string from = 2;
+  string to = 3;
+}
+
+message TranslateFriendMessageResponse {
+  string content = 1;
+}
+
+message TranslateV2Request {
+  string chat_session_id = 1;
+  string target_message_id = 2;
+}
+
+message TranslateV2Response {
+  string new_message_id = 1;
+  string content = 2;
+}
