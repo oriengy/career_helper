@@ -18,12 +18,12 @@ export const messageApi = {
    */
   async listMessages(
     params: ListMessagesParams
-  ): Promise<ListMessagesResponse> {
+  ): Promise<import('@/types/models').Message[]> {
     const response = await apiClient.post<ListMessagesResponse>(
       '/message.ChatMessageService/ListChatMessages',
       params
     );
-    return response.data;
+    return response.data.data || [];
   },
 
   /**

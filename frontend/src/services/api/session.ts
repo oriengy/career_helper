@@ -18,13 +18,13 @@ export const sessionApi = {
    * 获取会话列表
    */
   async listSessions(
-    params: ListChatSessionsParams
-  ): Promise<ListChatSessionsResponse> {
+    params: ListChatSessionsParams = {}
+  ): Promise<ChatSession[]> {
     const response = await apiClient.post<ListChatSessionsResponse>(
       '/chat.ChatService/ListChatSessions',
       params
     );
-    return response.data;
+    return response.data.data || [];
   },
 
   /**
@@ -32,12 +32,12 @@ export const sessionApi = {
    */
   async createSession(
     params: CreateChatSessionParams
-  ): Promise<CreateChatSessionResponse> {
+  ): Promise<ChatSession> {
     const response = await apiClient.post<CreateChatSessionResponse>(
       '/chat.ChatService/CreateChatSession',
       params
     );
-    return response.data;
+    return response.data.chatSession;
   },
 
   /**
@@ -54,7 +54,7 @@ export const sessionApi = {
   /**
    * 删除会话
    */
-  async deleteSession(params: DeleteChatSessionParams): Promise<void> {
-    await apiClient.post('/chat.ChatService/DeleteChatSession', params);
+  async deleteSession(sessionId: string): Promise<void> {
+    await apiClient.post('/chat.ChatService/DeleteChatSession', { id: sessionId });
   },
 };

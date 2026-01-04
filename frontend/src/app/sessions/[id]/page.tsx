@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Button,
   Textarea,
-  Message,
+  MessagePlugin,
   Avatar,
   Popup,
   Divider,
@@ -60,7 +60,7 @@ export default function SessionDetailPage() {
 
       const currentSession = sessionData.find((s) => s.sessionId === sessionId);
       if (!currentSession) {
-        Message.error('会话不存在');
+        MessagePlugin.error('会话不存在');
         router.back();
         return;
       }
@@ -68,7 +68,7 @@ export default function SessionDetailPage() {
       setSession(currentSession);
       setMessages(messagesData);
     } catch (error: any) {
-      Message.error(error.message || '加载失败');
+      MessagePlugin.error(error.message || '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +87,7 @@ export default function SessionDetailPage() {
   const handleSendMessage = async () => {
     const text = inputText.trim();
     if (!text) {
-      Message.error('请输入消息内容');
+      MessagePlugin.error('请输入消息内容');
       return;
     }
 
@@ -102,7 +102,7 @@ export default function SessionDetailPage() {
       setInputText('');
       await loadData();
     } catch (error: any) {
-      Message.error(error.message || '发送失败');
+      MessagePlugin.error(error.message || '发送失败');
     } finally {
       setIsSending(false);
     }
@@ -122,9 +122,9 @@ export default function SessionDetailPage() {
       });
 
       await loadData();
-      Message.success('图片发送成功');
+      MessagePlugin.success('图片发送成功');
     } catch (error: any) {
-      Message.error(error.message || '图片上传失败');
+      MessagePlugin.error(error.message || '图片上传失败');
     }
 
     // 重置文件输入
@@ -139,9 +139,9 @@ export default function SessionDetailPage() {
     try {
       await translateApi.translateMessage({ sessionId, messageId });
       await loadData();
-      Message.success('翻译成功');
+      MessagePlugin.success('翻译成功');
     } catch (error: any) {
-      Message.error(error.message || '翻译失败');
+      MessagePlugin.error(error.message || '翻译失败');
     } finally {
       setIsTranslating(false);
       setSelectedMessageId(null);
@@ -152,7 +152,7 @@ export default function SessionDetailPage() {
   const handleConsult = async () => {
     const text = inputText.trim();
     if (!text) {
-      Message.error('请输入咨询内容');
+      MessagePlugin.error('请输入咨询内容');
       return;
     }
 
@@ -166,7 +166,7 @@ export default function SessionDetailPage() {
       setInputText('');
       await loadData();
     } catch (error: any) {
-      Message.error(error.message || '咨询失败');
+      MessagePlugin.error(error.message || '咨询失败');
     } finally {
       setIsConsulting(false);
     }
@@ -177,9 +177,9 @@ export default function SessionDetailPage() {
     try {
       await messageApi.deleteMessage(messageId);
       await loadData();
-      Message.success('删除成功');
+      MessagePlugin.success('删除成功');
     } catch (error: any) {
-      Message.error(error.message || '删除失败');
+      MessagePlugin.error(error.message || '删除失败');
     } finally {
       setSelectedMessageId(null);
     }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Message } from 'tdesign-react';
+import { Button, MessagePlugin } from 'tdesign-react';
 import { useUserStore } from '@/stores/user';
 import { profileApi } from '@/services/api/profile';
 import { ROUTES } from '@/constants/routes';
@@ -16,7 +16,7 @@ export default function GenderPage() {
 
   const handleSubmit = async () => {
     if (!selectedGender) {
-      Message.error('请选择性别');
+      MessagePlugin.error('请选择性别');
       return;
     }
 
@@ -36,10 +36,10 @@ export default function GenderPage() {
         setProfile(newProfile);
       }
 
-      Message.success('设置成功');
+      MessagePlugin.success('设置成功');
       router.push(ROUTES.SESSIONS);
     } catch (error: any) {
-      Message.error(error.message || '设置失败');
+      MessagePlugin.error(error.message || '设置失败');
     } finally {
       setIsSubmitting(false);
     }

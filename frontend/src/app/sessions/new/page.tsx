@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input, Button, Message, Radio, Upload, Avatar } from 'tdesign-react';
+import { Input, Button, MessagePlugin, Radio, Upload, Avatar } from 'tdesign-react';
 import { ArrowLeftIcon, UploadIcon } from 'tdesign-icons-react';
 import { useUserStore } from '@/stores/user';
 import { sessionApi } from '@/services/api/session';
@@ -32,10 +32,10 @@ export default function NewSessionPage() {
         setUploadProgress(percent);
       });
       setFriendAvatar(url);
-      Message.success('头像上传成功');
+      MessagePlugin.success('头像上传成功');
       return { status: 'success', url };
     } catch (error: any) {
-      Message.error(error.message || '头像上传失败');
+      MessagePlugin.error(error.message || '头像上传失败');
       return { status: 'fail', error: error.message };
     }
   };
@@ -43,12 +43,12 @@ export default function NewSessionPage() {
   // 创建会话
   const handleSubmit = async () => {
     if (!friendName.trim()) {
-      Message.error('请输入对方昵称');
+      MessagePlugin.error('请输入对方昵称');
       return;
     }
 
     if (!friendGender) {
-      Message.error('请选择对方性别');
+      MessagePlugin.error('请选择对方性别');
       return;
     }
 
@@ -60,10 +60,10 @@ export default function NewSessionPage() {
         friendAvatar: friendAvatar || undefined,
       });
 
-      Message.success('创建成功');
+      MessagePlugin.success('创建成功');
       router.push(ROUTES.SESSION_DETAIL(session.sessionId));
     } catch (error: any) {
-      Message.error(error.message || '创建失败');
+      MessagePlugin.error(error.message || '创建失败');
     } finally {
       setIsSubmitting(false);
     }

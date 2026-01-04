@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input, Button, Message } from 'tdesign-react';
+import { Input, Button, MessagePlugin } from 'tdesign-react';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { authApi } from '@/services/api/auth';
 import { validatePhone, validateVerifyCode } from '@/services/utils/validator';
 import { ROUTES } from '@/constants/routes';
+import { config } from '@/constants/config';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,17 +35,17 @@ export default function LoginPage() {
   const handleSendCode = async () => {
     // 验证手机号
     if (!validatePhone(phone)) {
-      Message.error('请输入正确的手机号');
+      MessagePlugin.error('请输入正确的手机号');
       return;
     }
 
     setIsSendingCode(true);
     try {
       await authApi.sendVerifyCode({ phone });
-      Message.success('验证码已发送');
+      MessagePlugin.success('验证码已发送');
       setCountdown(60);
     } catch (error: any) {
-      Message.error(error.message || '发送验证码失败');
+      MessagePlugin.error(error.message || '发送验证码失败');
     } finally {
       setIsSendingCode(false);
     }
@@ -54,24 +55,24 @@ export default function LoginPage() {
   const handleLogin = async () => {
     // 验证输入
     if (!phone || !verifyCode) {
-      Message.error('请填写完整信息');
+      MessagePlugin.error('请填写完整信息');
       return;
     }
 
     if (!validatePhone(phone)) {
-      Message.error('请输入正确的手机号');
+      MessagePlugin.error('请输入正确的手机号');
       return;
     }
 
-    if (!validateVerifyCode(verifyCode)) {
-      Message.error('请输入6位验证码');
+    if (!config.mockLogin && !validateVerifyCode(verifyCode)) {
+      MessagePlugin.error('请输入6位验证码');
       return;
     }
 
     setIsLoggingIn(true);
     try {
       await login(phone, verifyCode);
-      Message.success('登录成功');
+      MessagePlugin.success('登录成功');
 
       // 判断是否需要性别选择
       const currentProfile = useUserStore.getState().profile;
@@ -81,7 +82,7 @@ export default function LoginPage() {
         router.push(ROUTES.SESSIONS);
       }
     } catch (error: any) {
-      Message.error(error.message || '登录失败');
+      MessagePlugin.error(error.message || '登录失败');
     } finally {
       setIsLoggingIn(false);
     }
@@ -164,12 +165,12 @@ export default function LoginPage() {
         </div>
 
         {/* 开发环境提示 */}
-        {process.env.NODE_ENV === 'development' && (
+        {config.mockLogin && (
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              <strong>开发环境提示：</strong>
+              <strong>测试登录提示：</strong>
               <br />
-              验证码：1234（魔法验证码）
+              验证码：任意（mock）
               <br />
               测试手机号：138xxxxxxxx
             </p>

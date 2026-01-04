@@ -74,6 +74,30 @@ export async function uploadAvatar(
 }
 
 /**
+ * 上传聊天图片（自动压缩）
+ */
+export async function uploadChatImage(
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string> {
+  // 1. 压缩图片
+  const compressedFile = await compressImage(file, {
+    maxWidth: 1200,
+    maxHeight: 1200,
+    quality: 0.85,
+  });
+
+  // 2. 上传
+  const response = await uploadFile(compressedFile, {
+    usageType: 'chat_image',
+    onProgress,
+  });
+
+  // 3. 返回公共 URL
+  return response.publicUrl;
+}
+
+/**
  * 压缩图片
  */
 async function compressImage(
@@ -144,3 +168,12 @@ async function compressImage(
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * 上传 API 对象（统一导出）
+ */
+export const uploadApi = {
+  uploadFile,
+  uploadAvatar,
+  uploadChatImage,
+};

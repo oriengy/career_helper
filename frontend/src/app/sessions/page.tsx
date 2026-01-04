@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Message, Dialog, Empty, Avatar } from 'tdesign-react';
+import { Button, MessagePlugin, Dialog, Empty, Avatar } from 'tdesign-react';
 import { AddIcon, DeleteIcon } from 'tdesign-icons-react';
 import { useUserStore } from '@/stores/user';
 import { sessionApi } from '@/services/api/session';
@@ -26,7 +26,7 @@ export default function SessionsPage() {
       const data = await sessionApi.listSessions();
       setSessions(data);
     } catch (error: any) {
-      Message.error(error.message || '加载会话列表失败');
+      MessagePlugin.error(error.message || '加载会话列表失败');
     } finally {
       setIsLoading(false);
     }
@@ -54,11 +54,11 @@ export default function SessionsPage() {
     if (confirmResult) {
       try {
         await sessionApi.deleteSession(sessionId);
-        Message.success('删除成功');
+        MessagePlugin.success('删除成功');
         // 刷新列表
         loadSessions();
       } catch (error: any) {
-        Message.error(error.message || '删除失败');
+        MessagePlugin.error(error.message || '删除失败');
       }
     }
   };
