@@ -80,8 +80,14 @@ export const useAuthStore = create<AuthState>()(
 
           // 更新用户信息到 userStore
           const userStore = useUserStore.getState();
-          userStore.setUser(response.user);
-          userStore.setProfile(response.profile);
+          if (response.user && response.profile) {
+            userStore.setUser(response.user);
+            userStore.setProfile(response.profile);
+          } else {
+            const profileResponse = await authApi.getUserProfile();
+            userStore.setUser(profileResponse.user);
+            userStore.setProfile(profileResponse.profile);
+          }
         } finally {
           set({ isLoggingIn: false });
         }

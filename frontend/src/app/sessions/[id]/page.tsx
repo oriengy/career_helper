@@ -104,7 +104,7 @@ export default function SessionDetailPage() {
         sessionId,
         role: 'SELF',
         content: text,
-        messageType: 'TEXT',
+        msgType: 'HISTORY',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
@@ -151,7 +151,10 @@ export default function SessionDetailPage() {
   const handleTranslate = async (messageId: string) => {
     setIsTranslating(true);
     try {
-      await translateApi.translateMessage({ sessionId, messageId });
+      await translateApi.translateMessage({
+        chatSessionId: sessionId,
+        targetMessageId: messageId,
+      });
       await loadData();
       MessagePlugin.success('翻译成功');
     } catch (error: any) {
@@ -282,8 +285,8 @@ export default function SessionDetailPage() {
                                         ? 'bg-blue-600 text-white rounded-tr-sm' 
                                         : 'bg-slate-800 text-slate-200 border border-white/5 rounded-tl-sm'
                                     }
-                                    ${msg.messageType === 'TRANSLATE' ? '!bg-amber-900/30 !border-amber-700/50 !text-amber-100' : ''}
-                                    ${msg.messageType === 'CONSULT' ? '!bg-indigo-900/30 !border-indigo-700/50 !text-indigo-100' : ''}
+                                    ${msg.msgType === 'TRANSLATE' ? '!bg-amber-900/30 !border-amber-700/50 !text-amber-100' : ''}
+                                    ${msg.msgType === 'CONSULT' ? '!bg-indigo-900/30 !border-indigo-700/50 !text-indigo-100' : ''}
                                 `}
                             >
                                 {msg.imageUrl ? (
@@ -321,7 +324,7 @@ export default function SessionDetailPage() {
                                 >
                                     <DeleteIcon size="14px" />
                                 </button>
-                                {msg.role === 'FRIEND' && msg.messageType === 'HISTORY' && (
+                                {msg.role === 'FRIEND' && msg.msgType === 'HISTORY' && (
                                      <button 
                                         onClick={() => handleTranslate(msg.messageId)}
                                         className={`p-1.5 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded ${isTranslating ? 'animate-pulse' : ''}`}
@@ -334,10 +337,10 @@ export default function SessionDetailPage() {
                         </div>
                         
                         {/* Type Labels */}
-                        {msg.messageType !== 'HISTORY' && msg.messageType !== 'TEXT' && (
+                        {msg.msgType !== 'HISTORY' && msg.msgType !== 'TEXT' && (
                             <span className="text-[10px] mt-1 text-slate-500 uppercase tracking-wider px-1">
-                                {msg.messageType === 'TRANSLATE' && 'AI 翻译'}
-                                {msg.messageType === 'CONSULT' && 'AI 咨询'}
+                                {msg.msgType === 'TRANSLATE' && 'AI 翻译'}
+                                {msg.msgType === 'CONSULT' && 'AI 咨询'}
                             </span>
                         )}
                     </div>

@@ -15,8 +15,8 @@ export const translateApi = {
     const response = await apiClient.post<TranslateResponse>(
       '/translate.TranslateService/TranslateV2',
       {
-        messageId: params.messageId,
-        direction: params.direction,
+        chatSessionId: params.chatSessionId,
+        targetMessageId: params.targetMessageId,
       }
     );
     return response.data;

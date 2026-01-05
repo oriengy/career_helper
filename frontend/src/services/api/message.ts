@@ -14,6 +14,31 @@ import type {
 
 export const messageApi = {
   /**
+   * 标准化消息字段，兼容后端返回
+   */
+  mapMessage(message: import('@/types/models').Message): import('@/types/models').Message {
+    const rawMessage = message as any;
+    const messageId = message.messageId || message.id || rawMessage.message_id;
+    const sessionId = message.sessionId || rawMessage.sessionId || rawMessage.session_id;
+    const parentId = message.parentId || rawMessage.parentId || rawMessage.parent_id;
+    const msgType = message.msgType || rawMessage.msgType || rawMessage.msg_type || rawMessage.messageType;
+    const tags = message.tags || rawMessage.tags || [];
+    const content = message.content ?? rawMessage.content;
+    const imageUrl = message.imageUrl || (tags.includes('image') ? content : undefined);
+
+    return {
+      ...message,
+      messageId,
+      sessionId,
+      parentId,
+      msgType,
+      tags,
+      content,
+      imageUrl,
+    };
+  },
+
+  /**
    * 获取消息列表
    */
   async listMessages(
@@ -23,7 +48,7 @@ export const messageApi = {
       '/message.ChatMessageService/ListChatMessages',
       params
     );
-    return response.data.data || [];
+    return (response.data.messages || []).map((msg) => messageApi.mapMessage(msg));
   },
 
   /**
@@ -32,11 +57,32 @@ export const messageApi = {
   async createMessage(
     params: CreateMessageParams
   ): Promise<CreateMessageResponse> {
+    const tags = params.tags ? [...params.tags] : [];
+    const content = params.imageUrl ? params.imageUrl : params.content;
+    if (params.imageUrl && !tags.includes('image')) {
+      tags.push('image');
+    }
+
     const response = await apiClient.post<CreateMessageResponse>(
       '/message.ChatMessageService/CreateChatMessage',
-      params
+      {
+        messages: [
+          {
+            sessionId: params.sessionId,
+            parentId: params.parentId,
+            role: params.role,
+            msgType: params.msgType || 'HISTORY',
+            content,
+            tags,
+          },
+        ],
+      }
     );
-    return response.data;
+    return {
+      messages: (response.data.messages || []).map((msg) =>
+        messageApi.mapMessage(msg)
+      ),
+    };
   },
 
   /**
@@ -57,7 +103,7 @@ export const messageApi = {
    */
   async deleteMessage(id: string): Promise<void> {
     await apiClient.post('/message.ChatMessageService/DeleteChatMessage', {
-      id,
+      ids: [id],
     });
   },
 
@@ -66,7 +112,7 @@ export const messageApi = {
    */
   async parseImageMessages(sessionId: string, imageUrl: string): Promise<any> {
     const response = await apiClient.post(
-      '/message.FriendMessageService/ParseImageMessages',
+      '/message.ChatMessageService/ParseImageMessages',
       {
         sessionId,
         imageUrl,

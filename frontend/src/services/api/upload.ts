@@ -23,18 +23,15 @@ export async function uploadFile(
   const formData = new FormData();
   formData.append('file', file);
 
-  if (usageType) {
-    formData.append('usage_type', usageType);
-  }
-
   // 发送请求
-  const response = await apiClient.post<UploadFileResponse>(
+  const response = await apiClient.post<{ data: UploadFileResponse }>(
     '/file/wx_upload',
     formData,
     {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      params: usageType ? { usage_type: usageType } : undefined,
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round(
@@ -46,7 +43,7 @@ export async function uploadFile(
     }
   );
 
-  return response.data;
+  return response.data.data;
 }
 
 /**

@@ -36,8 +36,8 @@ export interface PhoneLoginParams {
 
 export interface PhoneLoginResponse {
   token: string;
-  user: User;
-  profile: Profile;
+  user?: User;
+  profile?: Profile;
 }
 
 export interface UserProfileResponse {
@@ -80,17 +80,24 @@ export interface ListMessagesParams extends PageRequest {
   ids?: string[];
 }
 
-export interface ListMessagesResponse extends PageResponse<Message> {}
+export interface ListMessagesResponse {
+  messages: Message[];
+  nextPageToken?: string;
+}
 
 export interface CreateMessageParams {
   sessionId: string;
   role: string;
   content: string;
+  msgType?: string;
+  parentId?: string;
+  tags?: string[];
+  imageUrl?: string;
   msgAt?: string;
 }
 
 export interface CreateMessageResponse {
-  message: Message;
+  messages: Message[];
 }
 
 export interface SendConsultMessageParams {
@@ -99,17 +106,19 @@ export interface SendConsultMessageParams {
 }
 
 export interface SendConsultMessageResponse {
-  message: Message;
+  consult: Message;
+  reply?: Message;
 }
 
 // 翻译相关
 export interface TranslateParams {
-  messageId: string;
-  direction: 'male' | 'female';
+  chatSessionId: string;
+  targetMessageId: string;
 }
 
 export interface TranslateResponse {
-  message: Message;
+  newMessageId: string;
+  content: string;
 }
 
 // 资料相关

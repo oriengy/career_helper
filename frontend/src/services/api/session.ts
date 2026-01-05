@@ -13,6 +13,21 @@ import type {
 } from '@/types/api';
 import type { ChatSession } from '@/types/models';
 
+const mapChatSession = (session: ChatSession): ChatSession => {
+  const sessionId = session.sessionId || session.id;
+  const name = session.friendName || session.name;
+  const avatar = session.friendAvatar || session.avatar;
+  const gender = session.friendGender || session.gender;
+
+  return {
+    ...session,
+    sessionId,
+    friendName: name,
+    friendAvatar: avatar,
+    friendGender: gender,
+  };
+};
+
 export const sessionApi = {
   /**
    * 获取会话列表
@@ -24,7 +39,7 @@ export const sessionApi = {
       '/chat.ChatService/ListChatSessions',
       params
     );
-    return response.data.data || [];
+    return (response.data.data || []).map(mapChatSession);
   },
 
   /**
@@ -37,7 +52,7 @@ export const sessionApi = {
       '/chat.ChatService/CreateChatSession',
       params
     );
-    return response.data.chatSession;
+    return mapChatSession(response.data.chatSession);
   },
 
   /**
@@ -48,7 +63,7 @@ export const sessionApi = {
       '/chat.ChatService/UpdateChatSession',
       params
     );
-    return response.data.chatSession;
+    return mapChatSession(response.data.chatSession);
   },
 
   /**

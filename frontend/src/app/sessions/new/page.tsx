@@ -56,9 +56,11 @@ export default function NewSessionPage() {
     setIsSubmitting(true);
     try {
       const session = await sessionApi.createSession({
-        friendName: friendName.trim(),
-        friendGender,
-        friendAvatar: friendAvatar || undefined,
+        profile: {
+          name: friendName.trim(),
+          gender: friendGender,
+          avatar: friendAvatar || undefined,
+        },
       });
 
       MessagePlugin.success('创建成功');

@@ -30,6 +30,7 @@ export default function GenderPage() {
       if (profile) {
         // 更新已存在的 profile
         const updatedProfile = await profileApi.updateProfile({
+          id: profile.id,
           gender: selectedGender,
         });
         setProfile(updatedProfile);
