@@ -58,6 +58,7 @@ export default function SessionDetailPage() {
   const loadData = async () => {
     // Only show full loading on first load if no messages
     if (messages.length === 0) setIsLoading(true);
+    console.debug('[SessionDetail] loadData start', { sessionId });
     try {
       const [sessionData, messagesData] = await Promise.all([
         sessionApi.listSessions(),
@@ -65,6 +66,11 @@ export default function SessionDetailPage() {
       ]);
 
       const currentSession = sessionData.find((s) => s.sessionId === sessionId);
+      console.debug('[SessionDetail] loadData result', {
+        sessionCount: sessionData.length,
+        messageCount: messagesData.length,
+        hasSession: Boolean(currentSession),
+      });
       if (!currentSession) {
         MessagePlugin.error('会话不存在');
         router.push(ROUTES.SESSIONS);
@@ -74,6 +80,8 @@ export default function SessionDetailPage() {
       setSession(currentSession);
       setMessages(messagesData);
     } catch (error: any) {
+      console.error('[SessionDetail] sendMessage failed', error);
+      console.error('[SessionDetail] loadData failed', error);
       MessagePlugin.error(error.message || '加载失败');
     } finally {
       setIsLoading(false);
@@ -87,6 +95,13 @@ export default function SessionDetailPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    console.debug('[SessionDetail] messages updated', {
+      count: messages.length,
+      sessionId,
+    });
+  }, [messages, sessionId]);
 
   // Handle Send
   const handleSendMessage = async () => {
@@ -112,9 +127,13 @@ export default function SessionDetailPage() {
     setInputText('');
 
     try {
+      console.debug('[SessionDetail] sendMessage createMessage', {
+        sessionId,
+        textLength: text.length,
+      });
       await messageApi.createMessage({
         sessionId,
-        role: 'FRIEND',
+        role: 'SELF',
         content: text,
       });
       await loadData(); // Reload to get real ID and potentially AI response trigger
@@ -136,7 +155,7 @@ export default function SessionDetailPage() {
       const url = await uploadApi.uploadChatImage(file);
       await messageApi.createMessage({
         sessionId,
-        role: 'FRIEND',
+        role: 'SELF',
         imageUrl: url,
       });
       await loadData();
@@ -248,7 +267,7 @@ export default function SessionDetailPage() {
             </div>
           ) : (
             messages.map((msg, index) => {
-               const isUser = msg.role === 'SELF';
+               const isUser = msg.role === 'SELF' || msg.role === 'USER';
                return (
                 <div
                     key={msg.messageId || index}
@@ -295,7 +314,15 @@ export default function SessionDetailPage() {
                                         alt="Uploaded"
                                         className="max-w-full rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
                                         style={{ maxHeight: '300px' }}
-                                        onClick={() => { setCurrentImageUrl(msg.imageUrl!); setImageViewerVisible(true); }}
+                                        onClick={() => {
+                                          if (!msg.imageUrl) return;
+                                          console.debug('[SessionDetail] open image viewer', {
+                                            messageId: msg.messageId,
+                                            imageUrl: msg.imageUrl,
+                                          });
+                                          setCurrentImageUrl(msg.imageUrl);
+                                          setImageViewerVisible(true);
+                                        }}
                                     />
                                 ) : (
                                     <div className="markdown prose prose-invert prose-sm max-w-none">
@@ -447,9 +474,15 @@ export default function SessionDetailPage() {
       </div>
 
       <ImageViewer
-        images={[currentImageUrl]}
-        visible={imageViewerVisible}
-        onClose={() => setImageViewerVisible(false)}
+        images={currentImageUrl ? [currentImageUrl] : []}
+        visible={imageViewerVisible && Boolean(currentImageUrl)}
+        closeOnOverlay
+        closeOnEscKeydown
+        closeBtn
+        onClose={() => {
+          setImageViewerVisible(false);
+          setCurrentImageUrl('');
+        }}
         index={0}
       />
 

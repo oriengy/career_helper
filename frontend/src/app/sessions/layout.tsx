@@ -39,6 +39,12 @@ export default function SessionsLayout({
     loadSessions();
   }, []);
 
+  useEffect(() => {
+    if (pathname.startsWith(ROUTES.SESSIONS)) {
+      loadSessions();
+    }
+  }, [pathname]);
+
   const handleCreateSession = () => {
     router.push(ROUTES.SESSION_NEW);
     if (window.innerWidth < 1024) setIsMobileMenuOpen(false);

@@ -27,7 +27,7 @@ body {
 .markdown {
   font-size: 16px;
   line-height: 1.75;
-  color: #404040;
+  color: inherit;
 }
 
 .markdown h1 {
@@ -152,4 +152,22 @@ body {
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
+}
+
+/* Constrain TDesign image preview blocks inside chat messages */
+.t-image-viewer__trigger,
+.t-image__wrapper {
+  max-width: 260px;
+  max-height: 300px;
+}
+
+.t-image__wrapper img {
+  max-width: 260px;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+}
+
+.t-image__error {
+  min-height: 120px;
 }
