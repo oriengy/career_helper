@@ -1,165 +1,75 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, MessagePlugin, Dialog, Empty, Avatar } from 'tdesign-react';
-import { AddIcon, DeleteIcon } from 'tdesign-icons-react';
-import { useUserStore } from '@/stores/user';
-import { sessionApi } from '@/services/api/session';
-import { getUserAvatar } from '@/lib/avatar';
-import { formatRelativeTime } from '@/services/utils/format';
+import { Button } from 'tdesign-react';
+import { AddIcon, ChatIcon } from 'tdesign-icons-react';
 import { ROUTES } from '@/constants/routes';
-import Loading from '@/components/common/Loading';
-import type { ChatSession } from '@/types/models';
 
-export default function SessionsPage() {
+export default function SessionsIndexPage() {
   const router = useRouter();
-  const { profile } = useUserStore();
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
 
-  // 加载会话列表
-  const loadSessions = async () => {
-    setIsLoading(true);
-    try {
-      const data = await sessionApi.listSessions();
-      setSessions(data);
-    } catch (error: any) {
-      MessagePlugin.error(error.message || '加载会话列表失败');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
-  // 创建新会话
-  const handleCreateSession = async () => {
-    router.push(ROUTES.SESSION_NEW);
-  };
-
-  // 删除会话
-  const handleDeleteSession = async (sessionId: string, friendName: string) => {
-    const confirmResult = await Dialog.confirm({
-      header: '确认删除',
-      body: `确定要删除与 ${friendName} 的聊天记录吗？此操作不可恢复。`,
-      confirmBtn: '删除',
-      cancelBtn: '取消',
-      theme: 'warning',
-    });
-
-    if (confirmResult) {
-      try {
-        await sessionApi.deleteSession(sessionId);
-        MessagePlugin.success('删除成功');
-        // 刷新列表
-        loadSessions();
-      } catch (error: any) {
-        MessagePlugin.error(error.message || '删除失败');
-      }
-    }
-  };
-
-  // 进入会话详情
-  const handleSessionClick = (sessionId: string) => {
-    router.push(ROUTES.SESSION_DETAIL(sessionId));
-  };
-
-  if (isLoading) {
-    return <Loading fullScreen text="加载中..." />;
-  }
+  const suggestions = [
+    { title: '模拟面试', desc: '帮我进行一场模拟前端开发面试' },
+    { title: '简历优化', desc: '分析我的简历并给出改进建议' },
+    { title: '职业规划', desc: '我现在迷茫，帮我规划职业路径' },
+    { title: '职场沟通', desc: '如何委婉地拒绝同事的请求？' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 头部 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-800">聊天列表</h1>
-          <Button
-            icon={<AddIcon />}
-            theme="primary"
-            onClick={handleCreateSession}
-            loading={isCreating}
-          >
-            新建会话
-          </Button>
+    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center h-full relative overflow-hidden">
+        {/* Background blobs for subtle effect */}
+        <div className="absolute top-[20%] left-[20%] w-[300px] h-[300px] bg-purple-500/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob pointer-events-none"></div>
+        <div className="absolute bottom-[20%] right-[20%] w-[300px] h-[300px] bg-blue-500/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000 pointer-events-none"></div>
+
+      <div className="z-10 max-w-2xl w-full animate-fade-in-up">
+        <div className="mb-10 flex flex-col items-center">
+            <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 rotate-3 transform hover:rotate-6 transition-transform duration-300">
+                <ChatIcon size="40px" className="text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
+                职宝书 AI
+            </h1>
+            <p className="text-lg text-slate-400">
+                您的全天候智能职场助手
+            </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-4">
+          {suggestions.map((item, index) => (
+            <button
+              key={index}
+              onClick={() => router.push(ROUTES.SESSION_NEW)} // In a real app, this might pre-fill the prompt
+              className="group text-left p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-200 hover:border-blue-500/30 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <h3 className="font-medium text-slate-200 mb-1 group-hover:text-blue-300 transition-colors">{item.title}</h3>
+              <p className="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">{item.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-10">
+             <Button 
+                theme="primary" 
+                size="large" 
+                icon={<AddIcon />} 
+                onClick={() => router.push(ROUTES.SESSION_NEW)}
+                className="!bg-gradient-to-r !from-blue-600 !to-indigo-600 !border-none !rounded-full !px-8 !h-12 !text-lg !font-medium hover:!shadow-lg hover:!shadow-blue-500/30 transition-all"
+            >
+                开始新对话
+             </Button>
         </div>
       </div>
-
-      {/* 会话列表 */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {sessions.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12">
-            <Empty description="暂无聊天记录">
-              <Button theme="primary" onClick={handleCreateSession} className="mt-4">
-                创建第一个会话
-              </Button>
-            </Empty>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {sessions.map((session) => (
-              <div
-                key={session.sessionId}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-              >
-                <div className="p-4 flex items-center gap-4">
-                  {/* 头像 */}
-                  <div
-                    onClick={() => handleSessionClick(session.sessionId)}
-                    className="flex-shrink-0"
-                  >
-                    <Avatar
-                      size="large"
-                      image={getUserAvatar(
-                        session.friendAvatar,
-                        session.friendGender,
-                        profile?.gender,
-                        true
-                      )}
-                    />
-                  </div>
-
-                  {/* 会话信息 */}
-                  <div
-                    onClick={() => handleSessionClick(session.sessionId)}
-                    className="flex-1 min-w-0"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-base font-semibold text-gray-800 truncate">
-                        {session.friendName}
-                      </h3>
-                      <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                        {formatRelativeTime(session.updatedAt)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 truncate">
-                      {session.lastMessage || '暂无消息'}
-                    </p>
-                  </div>
-
-                  {/* 删除按钮 */}
-                  <div className="flex-shrink-0">
-                    <Button
-                      variant="text"
-                      shape="circle"
-                      icon={<DeleteIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSession(session.sessionId, session.friendName);
-                      }}
-                      theme="danger"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      
+      <style jsx global>{`
+          @keyframes fade-in-up {
+              0% { opacity: 0; transform: translateY(20px); }
+              100% { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in-up {
+              animation: fade-in-up 0.8s ease-out forwards;
+          }
+      `}</style>
     </div>
   );
 }
