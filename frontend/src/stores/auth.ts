@@ -72,7 +72,10 @@ export const useAuthStore = create<AuthState>()(
       login: async (phone, code) => {
         set({ isLoggingIn: true });
         try {
-          const response = await authApi.phoneLogin({ phone, code });
+          const response = await authApi.phoneLogin({
+            phone,
+            verificationCode: code,
+          });
           get().setToken(response.token);
 
           // 更新用户信息到 userStore

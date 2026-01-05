@@ -31,7 +31,7 @@ export interface SendVerifyCodeParams {
 
 export interface PhoneLoginParams {
   phone: string;
-  code: string;
+  verificationCode: string;
 }
 
 export interface PhoneLoginResponse {

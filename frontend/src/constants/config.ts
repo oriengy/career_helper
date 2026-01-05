@@ -7,9 +7,7 @@ export const config = {
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
   appVersion: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
   appEnv: process.env.NEXT_PUBLIC_APP_ENV || 'production',
-  mockLogin:
-    process.env.NEXT_PUBLIC_MOCK_LOGIN === 'true' ||
-    process.env.NODE_ENV === 'development',
+  mockLogin: process.env.NEXT_PUBLIC_MOCK_LOGIN === 'true',
 
   // 应用配置
   appName: '恋爱翻译官',

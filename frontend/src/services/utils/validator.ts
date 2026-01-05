@@ -22,7 +22,7 @@ export function validateEmail(email: string): boolean {
  * 验证验证码（6位数字）
  */
 export function validateVerifyCode(code: string): boolean {
-  const codeRegex = /^\d{6}$/;
+  const codeRegex = /^\d{4}$/;
   return codeRegex.test(code);
 }
 

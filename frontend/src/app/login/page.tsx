@@ -78,7 +78,7 @@ export default function LoginPage() {
     }
 
     if (!config.mockLogin && !validateVerifyCode(verifyCode)) {
-      MessagePlugin.error('请输入6位验证码');
+      MessagePlugin.error('请输入4位验证码');
       return;
     }
 
@@ -191,8 +191,8 @@ export default function LoginPage() {
                     type="text"
                     value={verifyCode}
                     onChange={(e) => setVerifyCode(e.target.value)}
-                    placeholder="6位数字"
-                    maxLength={6}
+                    placeholder="4位数字"
+                    maxLength={4}
                     className="w-full bg-slate-800/50 text-white placeholder-gray-500 border border-white/10 rounded-xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 focus:bg-slate-800 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
                   />
                 </div>
