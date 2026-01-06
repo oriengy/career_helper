@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./chat_server-main/app_server
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./chat_server-main/app_server/config.yaml:/app/config.yaml:ro
+    environment:
+      - TZ=Asia/Shanghai
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: "http://66.103.211.53/api"
+        NEXT_PUBLIC_APP_VERSION: "1.0.0"
+        NEXT_PUBLIC_APP_ENV: "production"
+        NEXT_PUBLIC_MOCK_LOGIN: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
