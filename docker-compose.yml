@@ -26,7 +26,7 @@ services:
         NEXT_PUBLIC_APP_ENV: "production"
         NEXT_PUBLIC_MOCK_LOGIN: "false"
     ports:
-      - "3000:3000"
+      - "3005:3000"
     depends_on:
       - backend
     restart: unless-stopped
