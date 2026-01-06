@@ -1,0 +1,188 @@
+# 端口问题快速解决方案
+
+## 🚨 遇到 "Error response from daemon" 或端口占用错误？
+
+### 方案 1：一键自动修复（推荐）
+
+在服务器上运行：
+
+```bash
+cd /www/wwwroot/career_helper-main
+chmod +x deploy/fix-port-issues.sh
+./deploy/fix-port-issues.sh
+```
+
+脚本会自动：
+- 停止旧容器
+- 检查并释放端口
+- 清理 Docker 资源
+- 重新启动服务
+
+---
+
+### 方案 2：手动修复
+
+#### Step 1: 停止所有容器
+
+```bash
+cd /www/wwwroot/career_helper-main
+docker compose down
+```
+
+#### Step 2: 检查端口占用
+
+```bash
+# 检查 3000 端口
+sudo lsof -i :3000
+sudo netstat -tulpn | grep :3000
+
+# 检查 8082 端口
+sudo lsof -i :8082
+sudo netstat -tulpn | grep :8082
+```
+
+#### Step 3: 终止占用进程（如果有）
+
+```bash
+# 终止 3000 端口的进程
+sudo kill -9 <PID>
+
+# 终止 8082 端口的进程
+sudo kill -9 <PID>
+```
+
+#### Step 4: 重新启动
+
+```bash
+docker compose up -d
+```
+
+---
+
+### 方案 3：使用备用端口
+
+如果端口无法释放，修改端口映射：
+
+```bash
+cd /www/wwwroot/career_helper-main
+docker compose -f deploy/docker-compose.alternative-ports.yml up -d
+```
+
+访问地址：
+- 前端：http://your-server:3001
+- 后端：http://your-server:8083
+
+---
+
+### 方案 4：仅修改前端端口
+
+编辑 `docker-compose.yml`：
+
+```yaml
+services:
+  frontend:
+    ports:
+      - "3001:3000"  # 改成 3001 或其他可用端口
+```
+
+---
+
+### 方案 5：仅修改后端端口
+
+编辑 `docker-compose.yml`：
+
+```yaml
+services:
+  backend:
+    ports:
+      - "8083:8082"  # 改成 8083 或其他可用端口
+```
+
+**注意**：修改后端端口后，需要同步修改前端的 API 地址！
+
+---
+
+## 常见错误信息
+
+### `bind: address already in use`
+
+**原因**：端口被占用
+
+**快速解决**：
+```bash
+docker compose down
+sudo lsof -i :3000 -i :8082 | grep LISTEN | awk '{print $2}' | xargs sudo kill -9
+docker compose up -d
+```
+
+---
+
+### `Cannot connect to the Docker daemon`
+
+**原因**：Docker 服务未运行
+
+**解决**：
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker  # 设置开机自启
+```
+
+---
+
+### `permission denied`
+
+**原因**：权限不足
+
+**解决**：
+```bash
+# 方法1：使用 sudo
+sudo docker compose up -d
+
+# 方法2：将用户加入 docker 组
+sudo usermod -aG docker $USER
+newgrp docker  # 或注销后重新登录
+```
+
+---
+
+## 验证服务运行
+
+```bash
+# 查看容器状态
+docker compose ps
+
+# 查看容器日志
+docker compose logs -f
+
+# 测试前端
+curl http://localhost:3000
+
+# 测试后端
+curl http://localhost:8082/ping
+```
+
+---
+
+## 生产环境推荐
+
+### 使用 Nginx 反向代理
+
+这样可以避免端口冲突，统一通过 80/443 端口访问：
+
+```bash
+docker compose -f deploy/docker-compose.nginx.yml up -d
+```
+
+详见：`deploy/DEPLOYMENT.md`
+
+---
+
+## 需要帮助？
+
+查看完整部署文档：`deploy/DEPLOYMENT.md`
+
+检查 Docker 日志：
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
+```

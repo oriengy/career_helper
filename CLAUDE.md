@@ -93,11 +93,23 @@ buf generate
 
 ```bash
 # Build and run both services
-docker-compose up --build
+docker compose up -d --build
 
 # Frontend runs on port 3000
 # Backend runs on port 8082
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
 ```
+
+**Common Issues**:
+- Port conflicts: See `PORT-ISSUE-SOLUTIONS.md` for quick fixes
+- Auto-fix script: `./deploy/fix-port-issues.sh`
+- Alternative ports: Use `deploy/docker-compose.alternative-ports.yml`
+- Production with Nginx: Use `deploy/docker-compose.nginx.yml`
 
 ## Key Technical Details
 

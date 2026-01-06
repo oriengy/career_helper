@@ -1,24 +1,22 @@
+# Docker Compose 配置 - 备用端口方案
+# 如果默认端口被占用，使用此配置
+
 services:
   backend:
     build:
-      context: ./chat_server-main/app_server
+      context: ../chat_server-main/app_server
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "8083:8082"  # 映射到 8083 端口（避免冲突）
     volumes:
-      - ./chat_server-main/app_server/config.yaml:/app/config.yaml:ro
+      - ../chat_server-main/app_server/config.yaml:/app/config.yaml:ro
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_BASE_URL: "http://66.103.211.53/api"
@@ -26,7 +24,7 @@ services:
         NEXT_PUBLIC_APP_ENV: "production"
         NEXT_PUBLIC_MOCK_LOGIN: "false"
     ports:
-      - "3000:3000"
+      - "3001:3000"  # 映射到 3001 端口（避免冲突）
     depends_on:
       - backend
     restart: unless-stopped
