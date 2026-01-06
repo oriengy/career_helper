@@ -4,10 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Button,
-  Textarea,
   MessagePlugin,
   Avatar,
-  Popup,
   ImageViewer,
 } from 'tdesign-react';
 import {
@@ -16,7 +14,7 @@ import {
   ChatIcon,
   TranslateIcon,
   DeleteIcon,
-  ArrowLeftIcon // Keep for mobile back
+  ArrowLeftIcon
 } from 'tdesign-icons-react';
 import ReactMarkdown from 'react-markdown';
 import { useUserStore } from '@/stores/user';
@@ -26,7 +24,7 @@ import { translateApi } from '@/services/api/translate';
 import { uploadApi } from '@/services/api/upload';
 import { getUserAvatar } from '@/lib/avatar';
 import { formatRelativeTime } from '@/services/utils/format';
-import { ROUTES } from '@/constants/routes'; // Added for redirect
+import { ROUTES } from '@/constants/routes';
 import Loading from '@/components/common/Loading';
 import type { ChatSession, Message as MessageType, MessageRole } from '@/types/models';
 
@@ -45,20 +43,23 @@ export default function SessionDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
+  
+  // Input states
   const [inputText, setInputText] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null); // To adjust height
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load Data
   const loadData = async () => {
-    // Only show full loading on first load if no messages
     if (messages.length === 0) setIsLoading(true);
-    console.debug('[SessionDetail] loadData start', { sessionId });
     try {
       const [sessionData, messagesData] = await Promise.all([
         sessionApi.listSessions(),
@@ -66,11 +67,6 @@ export default function SessionDetailPage() {
       ]);
 
       const currentSession = sessionData.find((s) => s.sessionId === sessionId);
-      console.debug('[SessionDetail] loadData result', {
-        sessionCount: sessionData.length,
-        messageCount: messagesData.length,
-        hasSession: Boolean(currentSession),
-      });
       if (!currentSession) {
         MessagePlugin.error('会话不存在');
         router.push(ROUTES.SESSIONS);
@@ -80,8 +76,6 @@ export default function SessionDetailPage() {
       setSession(currentSession);
       setMessages(messagesData);
     } catch (error: any) {
-      console.error('[SessionDetail] sendMessage failed', error);
-      console.error('[SessionDetail] loadData failed', error);
       MessagePlugin.error(error.message || '加载失败');
     } finally {
       setIsLoading(false);
@@ -90,80 +84,112 @@ export default function SessionDetailPage() {
 
   useEffect(() => {
     loadData();
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
   }, [sessionId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
-    console.debug('[SessionDetail] messages updated', {
-      count: messages.length,
-      sessionId,
-    });
-  }, [messages, sessionId]);
+  }, [messages, pendingFile]);
 
   // Handle Send
   const handleSendMessage = async () => {
     const text = inputText.trim();
-    if (!text) {
-      MessagePlugin.error('请输入消息内容');
+    if (!text && !pendingFile) {
+      MessagePlugin.error('请输入消息内容或选择图片');
       return;
     }
 
     setIsSending(true);
-    const tempId = Date.now().toString(); // Optimistic update ID
-    // Optimistically add user message for better UX
-    const optimisticMsg: MessageType = {
-        messageId: tempId,
-        sessionId,
-        role: 'SELF',
-        content: text,
-        msgType: 'HISTORY',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, optimisticMsg]);
-    setInputText('');
 
     try {
-      console.debug('[SessionDetail] sendMessage createMessage', {
-        sessionId,
-        textLength: text.length,
-      });
-      await messageApi.createMessage({
-        sessionId,
-        role: 'SELF',
-        content: text,
-      });
-      await loadData(); // Reload to get real ID and potentially AI response trigger
+      // 1. Upload and send image if exists
+      if (pendingFile) {
+        try {
+            const url = await uploadApi.uploadChatImage(pendingFile);
+            await messageApi.createMessage({
+                sessionId,
+                role: 'SELF',
+                imageUrl: url,
+            });
+        } catch (error: any) {
+            console.error('Image upload failed', error);
+            MessagePlugin.error('图片发送失败');
+        }
+      }
+
+      // 2. Send text if exists
+      if (text) {
+          // Optimistically add user text message
+          const tempId = Date.now().toString();
+          const optimisticMsg: MessageType = {
+              messageId: tempId,
+              sessionId,
+              role: 'SELF',
+              content: text,
+              msgType: 'HISTORY',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+          };
+          setMessages(prev => [...prev, optimisticMsg]);
+          
+          await messageApi.createMessage({
+            sessionId,
+            role: 'SELF',
+            content: text,
+          });
+      }
+
+      // Reset states
+      setInputText('');
+      setPendingFile(null);
+      setPreviewUrl('');
+      if (textAreaRef.current) {
+          textAreaRef.current.style.height = 'auto';
+          textAreaRef.current.style.minHeight = '40px';
+      }
+
+      await loadData();
     } catch (error: any) {
       MessagePlugin.error(error.message || '发送失败');
-      // Revert optimistic update if needed, or just let loadData fix it
-      setMessages(prev => prev.filter(m => m.messageId !== tempId));
     } finally {
       setIsSending(false);
     }
   };
 
-  // Handle Image
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Image Selection (Button)
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    try {
-      const url = await uploadApi.uploadChatImage(file);
-      await messageApi.createMessage({
-        sessionId,
-        role: 'SELF',
-        imageUrl: url,
-      });
-      await loadData();
-      MessagePlugin.success('图片发送成功');
-    } catch (error: any) {
-      MessagePlugin.error(error.message || '图片上传失败');
-    }
+    setFilePreview(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Handle Paste
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) setFilePreview(file);
+        return;
+      }
+    }
+  };
+
+  const setFilePreview = (file: File) => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const url = URL.createObjectURL(file);
+      setPendingFile(file);
+      setPreviewUrl(url);
+  };
+
+  const clearPreview = () => {
+      setPendingFile(null);
+      setPreviewUrl('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // Handle Translate
@@ -272,7 +298,7 @@ export default function SessionDetailPage() {
                 <div
                     key={msg.messageId || index}
                     className={`flex gap-4 animate-message-slide-in ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-                    style={{ animationDelay: `${index * 50}ms` }} // Staggered animation for initial load
+                    style={{ animationDelay: `${index * 50}ms` }}
                 >
                     {/* Avatar */}
                     <div className="flex-shrink-0 mt-1">
@@ -314,15 +340,7 @@ export default function SessionDetailPage() {
                                         alt="Uploaded"
                                         className="max-w-full rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
                                         style={{ maxHeight: '300px' }}
-                                        onClick={() => {
-                                          if (!msg.imageUrl) return;
-                                          console.debug('[SessionDetail] open image viewer', {
-                                            messageId: msg.messageId,
-                                            imageUrl: msg.imageUrl,
-                                          });
-                                          setCurrentImageUrl(msg.imageUrl);
-                                          setImageViewerVisible(true);
-                                        }}
+                                        onClick={() => { setCurrentImageUrl(msg.imageUrl!); setImageViewerVisible(true); }}
                                     />
                                 ) : (
                                     <div className="markdown prose prose-invert prose-sm max-w-none">
@@ -407,25 +425,45 @@ export default function SessionDetailPage() {
              </div>
 
              {/* Main Input Box */}
-             <div className="relative bg-slate-800 rounded-2xl border border-white/10 shadow-lg focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 transition-all">
+             <div className="relative bg-slate-800 rounded-2xl border border-white/10 shadow-lg focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 transition-all overflow-hidden">
                 <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={handleImageUpload}
+                    onChange={handleImageSelect}
                 />
+
+                {/* Image Preview Area */}
+                {pendingFile && (
+                    <div className="px-4 pt-4 pb-2">
+                        <div className="relative inline-block group">
+                            <img 
+                                src={previewUrl} 
+                                alt="Preview" 
+                                className="h-20 w-auto rounded-lg border border-white/10 object-cover"
+                            />
+                            <button 
+                                onClick={clearPreview}
+                                className="absolute -top-2 -right-2 bg-slate-700 text-white rounded-full p-1 hover:bg-red-500 transition-colors shadow-md"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 
                 <div className="flex items-end p-3 gap-2">
                      <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                        className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors mb-0.5"
                         title="上传图片"
                      >
                         <ImageIcon size="20px" />
                      </button>
                      
                      <textarea
+                        ref={textAreaRef}
                         rows={1}
                         value={inputText}
                         onChange={(e) => {
@@ -433,23 +471,24 @@ export default function SessionDetailPage() {
                             e.target.style.height = 'auto';
                             e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
                         }}
+                        onPaste={handlePaste}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSendMessage();
                             }
                         }}
-                        placeholder="输入消息..."
-                        className="flex-1 bg-transparent text-white placeholder-slate-500 resize-none outline-none max-h-[120px] py-2 text-sm leading-6"
+                        placeholder="输入消息，可粘贴图片..."
+                        className="flex-1 bg-transparent text-white placeholder-slate-500 resize-none outline-none max-h-[120px] py-2 text-sm leading-6 custom-scrollbar"
                         style={{ minHeight: '40px' }}
                      />
                      
                      <button
                         onClick={handleSendMessage}
-                        disabled={!inputText.trim() || isSending}
+                        disabled={(!inputText.trim() && !pendingFile) || isSending}
                         className={`
-                            p-2 rounded-xl transition-all duration-200
-                            ${inputText.trim() 
+                            p-2 rounded-xl transition-all duration-200 mb-0.5
+                            ${(inputText.trim() || pendingFile)
                                 ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50' 
                                 : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                             }
@@ -476,6 +515,7 @@ export default function SessionDetailPage() {
       <ImageViewer
         images={currentImageUrl ? [currentImageUrl] : []}
         visible={imageViewerVisible && Boolean(currentImageUrl)}
+        trigger={<span className="hidden" />}
         closeOnOverlay
         closeOnEscKeydown
         closeBtn
