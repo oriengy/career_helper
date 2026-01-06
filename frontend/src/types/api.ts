@@ -147,6 +147,7 @@ export interface ProfileResponse {
 
 // 文件上传
 export interface UploadFileResponse {
+  url?: string;
   publicUrl: string;
   privateUrl?: string;
   fileId?: string;

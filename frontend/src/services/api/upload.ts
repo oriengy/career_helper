@@ -67,7 +67,7 @@ export async function uploadAvatar(
   });
 
   // 3. 返回公共 URL
-  return response.publicUrl;
+  return response;
 }
 
 /**
@@ -76,7 +76,7 @@ export async function uploadAvatar(
 export async function uploadChatImage(
   file: File,
   onProgress?: (percent: number) => void
-): Promise<string> {
+): Promise<UploadFileResponse> {
   // 1. 压缩图片
   const compressedFile = await compressImage(file, {
     maxWidth: 1200,
@@ -91,7 +91,7 @@ export async function uploadChatImage(
   });
 
   // 3. 返回公共 URL
-  return response.publicUrl;
+  return response;
 }
 
 /**

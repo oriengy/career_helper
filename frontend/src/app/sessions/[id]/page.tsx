@@ -43,6 +43,7 @@ export default function SessionDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
+  const [translatingMessageId, setTranslatingMessageId] = useState<string | null>(null);
   
   // Input states
   const [inputText, setInputText] = useState('');
@@ -97,48 +98,36 @@ export default function SessionDetailPage() {
   const handleSendMessage = async () => {
     const text = inputText.trim();
     if (!text && !pendingFile) {
-      MessagePlugin.error('请输入消息内容或选择图片');
+      MessagePlugin.error('Please enter a message or select an image.');
       return;
     }
 
     setIsSending(true);
 
     try {
-      // 1. Upload and send image if exists
+      // 1. Upload and parse image if exists
       if (pendingFile) {
         try {
-            const url = await uploadApi.uploadChatImage(pendingFile);
-            await messageApi.createMessage({
-                sessionId,
-                role: 'SELF',
-                imageUrl: url,
-            });
+            const uploadResult = await uploadApi.uploadChatImage(pendingFile);
+            let imageKey = uploadResult.url || uploadResult.publicUrl;
+            if (imageKey && imageKey.startsWith('http')) {
+              try {
+                imageKey = decodeURIComponent(new URL(imageKey).pathname).replace(/^\/+/, '');
+              } catch {}
+            }
+            if (!imageKey) {
+              throw new Error('Missing image key');
+            }
+            await messageApi.parseImageMessages(sessionId, imageKey);
         } catch (error: any) {
             console.error('Image upload failed', error);
-            MessagePlugin.error('图片发送失败');
+            MessagePlugin.error('Image send failed.');
         }
       }
 
-      // 2. Send text if exists
+      // 2. Send consult if exists
       if (text) {
-          // Optimistically add user text message
-          const tempId = Date.now().toString();
-          const optimisticMsg: MessageType = {
-              messageId: tempId,
-              sessionId,
-              role: 'SELF',
-              content: text,
-              msgType: 'HISTORY',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, optimisticMsg]);
-          
-          await messageApi.createMessage({
-            sessionId,
-            role: 'SELF',
-            content: text,
-          });
+          await messageApi.sendConsultMessage({ sessionId, content: text });
       }
 
       // Reset states
@@ -152,7 +141,7 @@ export default function SessionDetailPage() {
 
       await loadData();
     } catch (error: any) {
-      MessagePlugin.error(error.message || '发送失败');
+      MessagePlugin.error(error.message || 'Send failed.');
     } finally {
       setIsSending(false);
     }
@@ -195,17 +184,19 @@ export default function SessionDetailPage() {
   // Handle Translate
   const handleTranslate = async (messageId: string) => {
     setIsTranslating(true);
+    setTranslatingMessageId(messageId);
     try {
       await translateApi.translateMessage({
         chatSessionId: sessionId,
         targetMessageId: messageId,
       });
       await loadData();
-      MessagePlugin.success('翻译成功');
+      MessagePlugin.success('????');
     } catch (error: any) {
-      MessagePlugin.error(error.message || '翻译失败');
+      MessagePlugin.error(error.message || '????');
     } finally {
       setIsTranslating(false);
+      setTranslatingMessageId(null);
       setSelectedMessageId(null);
     }
   };
@@ -270,6 +261,9 @@ export default function SessionDetailPage() {
 
   if (!session) return null;
 
+  const historyMessages = messages.filter((msg) => msg.msgType !== 'CONSULT');
+  const consultMessages = messages.filter((msg) => msg.msgType === 'CONSULT');
+
   return (
     <div className="h-full flex flex-col bg-slate-900 relative">
       {/* Mobile Header - Only visible on small screens */}
@@ -283,7 +277,7 @@ export default function SessionDetailPage() {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pt-16 lg:pt-4 pb-4 px-4 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-6">
-          {messages.length === 0 ? (
+          {historyMessages.length === 0 && consultMessages.length === 0 ? (
             <div className="text-center py-20 opacity-50 animate-fade-in-up">
                 <div className="w-16 h-16 bg-white/5 rounded-full mx-auto flex items-center justify-center mb-4">
                      <ChatIcon size="32px" className="text-slate-400" />
@@ -292,7 +286,7 @@ export default function SessionDetailPage() {
                 <p className="text-sm text-slate-500">这里是你们的专属空间</p>
             </div>
           ) : (
-            messages.map((msg, index) => {
+            historyMessages.map((msg, index) => {
                const isUser = msg.role === 'SELF' || msg.role === 'USER';
                return (
                 <div
@@ -349,6 +343,14 @@ export default function SessionDetailPage() {
                                 )}
                             </div>
 
+                            {msg.translateContent && (
+                                <div className={`mt-2 text-xs rounded-lg border px-3 py-2 ${isUser ? 'bg-slate-700/50 border-white/10 text-slate-200' : 'bg-amber-900/20 border-amber-700/40 text-amber-100'}`}>
+                                  <div className="markdown prose prose-invert prose-sm max-w-none">
+                                    <ReactMarkdown>{msg.translateContent}</ReactMarkdown>
+                                  </div>
+                                </div>
+                            )}
+
                             {/* Action Tools (Visible on Hover) */}
                             <div className={`
                                 absolute top-0 ${isUser ? '-left-24' : '-right-24'} h-full flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity px-2
@@ -372,7 +374,7 @@ export default function SessionDetailPage() {
                                 {msg.role === 'FRIEND' && msg.msgType === 'HISTORY' && (
                                      <button 
                                         onClick={() => handleTranslate(msg.messageId)}
-                                        className={`p-1.5 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded ${isTranslating ? 'animate-pulse' : ''}`}
+                                        className={`p-1.5 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded ${translatingMessageId === msg.messageId ? 'animate-pulse' : ''}`}
                                         title="翻译"
                                      >
                                         <TranslateIcon size="14px" />
@@ -392,6 +394,31 @@ export default function SessionDetailPage() {
                 </div>
                );
             })
+          )}
+          {consultMessages.length > 0 && (
+            <div className="pt-4 border-t border-white/5 space-y-3">
+              {consultMessages.map((msg, index) => {
+                const isUser = msg.role === 'USER' || msg.role === 'SELF';
+                return (
+                  <div
+                    key={msg.messageId || `consult-${index}`}
+                    className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`
+                        max-w-[85%] lg:max-w-[75%] text-sm leading-relaxed
+                        ${isUser ? 'bg-slate-200 text-slate-900' : 'text-slate-200'}
+                        ${isUser ? 'rounded-2xl rounded-tr-sm px-4 py-2' : 'px-1'}
+                      `}
+                    >
+                      <div className="markdown prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>{msg.content || ''}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
           <div ref={messagesEndRef} className="h-4" />
         </div>

@@ -25,6 +25,8 @@ export const messageApi = {
     const tags = message.tags || rawMessage.tags || [];
     const content = message.content ?? rawMessage.content;
     const imageUrl = message.imageUrl || (tags.includes('image') ? content : undefined);
+    const translateContent =
+      message.translateContent ?? rawMessage.translateContent ?? rawMessage.translate_content;
 
     return {
       ...message,
@@ -35,6 +37,7 @@ export const messageApi = {
       tags,
       content,
       imageUrl,
+      translateContent,
     };
   },
 
