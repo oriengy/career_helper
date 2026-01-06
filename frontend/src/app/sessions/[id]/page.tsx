@@ -311,7 +311,7 @@ export default function SessionDetailPage() {
                                 {isUser ? 'You' : (msg.role === 'AI' ? 'AI Assistant' : session.friendName)}
                              </span>
                              <span className="text-xs text-slate-600">
-                                {formatRelativeTime(msg.createdAt)}
+                                {formatRelativeTime(msg.createdAt || msg.msgAt || new Date())}
                              </span>
                         </div>
 
@@ -384,7 +384,7 @@ export default function SessionDetailPage() {
                         </div>
                         
                         {/* Type Labels */}
-                        {msg.msgType !== 'HISTORY' && msg.msgType !== 'TEXT' && (
+                        {msg.msgType !== 'HISTORY' && (
                             <span className="text-[10px] mt-1 text-slate-500 uppercase tracking-wider px-1">
                                 {msg.msgType === 'TRANSLATE' && 'AI 翻译'}
                                 {msg.msgType === 'CONSULT' && 'AI 咨询'}

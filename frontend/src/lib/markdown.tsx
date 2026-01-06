@@ -2,10 +2,12 @@
  * Markdown 渲染配置
  */
 
+import React from 'react';
+
 /**
  * Markdown 组件配置
  */
-export const markdownComponents = {
+export const markdownComponents: any = {
   // 代码块
   code({ node, inline, className, children, ...props }: any) {
     const match = /language-(\w+)/.exec(className || '');

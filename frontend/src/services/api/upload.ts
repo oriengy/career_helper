@@ -67,7 +67,7 @@ export async function uploadAvatar(
   });
 
   // 3. 返回公共 URL
-  return response;
+  return response.publicUrl;
 }
 
 /**

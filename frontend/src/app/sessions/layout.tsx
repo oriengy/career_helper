@@ -169,7 +169,7 @@ export default function SessionsLayout({
               image={getUserAvatar(profile?.avatar, profile?.gender, profile?.gender, false)}
             />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white truncate">{profile?.nickname || 'My account'}</div>
+                <div className="text-sm font-medium text-white truncate">{profile?.name || 'My account'}</div>
             </div>
           </div>
         </div>
