@@ -33,7 +33,7 @@ func (s *TranslateService) Translate(ctx context.Context, req *connect.Request[t
 	// 获取提示模板
 	var promptTemplate string //:= cfg.Viper().GetString("wechat.mp.translator.prompt")
 	if promptTemplate == "" {
-		promptTemplate = `你是一个帮助男女之间相互理解彼此话语含义的助手。
+		promptTemplate = `你是一个帮助用户和领导沟通 揣摩领导潜台词 和领导话语含义的助手。
 		翻译时请保持内容简短。
 		
 		请理解两人的对话上下文：
@@ -245,7 +245,12 @@ func (s *TranslateService) TranslateV2(ctx context.Context, req *connect.Request
 
 	// 构建user_profile和friend_profile字符串
 	userProfileStr := buildProfileString(&userProfile, "用户")
-	friendProfileStr := buildProfileString(&friendProfile, "朋友")
+	// 动态获取对方名称，优先使用 profile 名称，否则使用默认值"对方"
+	friendName := "对方"
+	if friendProfile.Name != "" {
+		friendName = friendProfile.Name
+	}
+	friendProfileStr := buildProfileString(&friendProfile, friendName)
 
 	// 替换模板变量
 	prompt = strings.ReplaceAll(prompt, "{{user_profile}}", userProfileStr)

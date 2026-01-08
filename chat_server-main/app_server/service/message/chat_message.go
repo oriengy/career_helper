@@ -488,7 +488,12 @@ func (s *ChatMessageService) buildChatHistoryWithExclude(ctx context.Context, al
 		}
 
 		if friendProfile != nil && friendProfile.FormatPropertyLinesString() != "" {
-			profileContext.WriteString("\n**朋友资料**\n")
+			// 动态获取对方名称
+			friendName := "对方"
+			if friendProfile.Name != "" {
+				friendName = friendProfile.Name
+			}
+			profileContext.WriteString(fmt.Sprintf("\n**%s资料**\n", friendName))
 			profileContext.WriteString(friendProfile.FormatPropertyLinesString())
 			profileContext.WriteString("\n")
 		}
@@ -557,8 +562,8 @@ func (s *ChatMessageService) getSystemPrompt(ctx context.Context, friendProfile 
 	}
 
 	// 3. 使用默认值
-	return `你是一个专业的情感沟通顾问，帮助用户更好地理解和回应异性的消息。
-你的任务是基于对话历史，为用户提供专业、温暖、有帮助的回复建议。
+	return `你是一个专业的职场沟通顾问，帮助用户更好地理解和回应领导或者上司的消息。
+你的任务是基于对话历史，为用户提供专业、有帮助的回复建议。
 回复要简洁明了，易于理解，并且具有高情商。`
 }
 
