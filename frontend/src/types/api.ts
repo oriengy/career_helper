@@ -2,7 +2,7 @@
  * API 相关类型定义
  */
 
-import type { User, Profile, ChatSession, Message } from './models';
+import type { User, Profile, ChatSession, Message, ProfileProperty } from './models';
 
 // 通用响应类型
 export interface ApiResponse<T = any> {
@@ -53,6 +53,7 @@ export interface ListChatSessionsResponse extends PageResponse<ChatSession> {}
 export interface CreateChatSessionParams {
   profile: {
     name: string;
+    imName?: string;
     gender?: string;
     avatar?: string;
   };
@@ -127,6 +128,7 @@ export interface CreateProfileParams {
   imName?: string;
   avatar?: string;
   gender?: string;
+  custom?: ProfileProperty[];
   age?: number;
   birthday?: string;
   birthLocation?: string;

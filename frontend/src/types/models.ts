@@ -30,11 +30,17 @@ export interface Profile {
   avatar?: string;
   age?: number;
   gender?: Gender;
+  custom?: ProfileProperty[];
   birthday?: string;
   birthLocation?: string;
   currentLocation?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface ProfileProperty {
+  name: string;
+  value: string;
 }
 
 // 聊天会话

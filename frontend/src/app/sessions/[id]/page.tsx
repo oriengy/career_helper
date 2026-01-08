@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  Button,
   MessagePlugin,
   Avatar,
   ImageViewer,
@@ -25,7 +24,6 @@ import { uploadApi } from '@/services/api/upload';
 import { getUserAvatar } from '@/lib/avatar';
 import { formatRelativeTime } from '@/services/utils/format';
 import { ROUTES } from '@/constants/routes';
-import Loading from '@/components/common/Loading';
 import type { ChatSession, Message as MessageType, MessageRole } from '@/types/models';
 
 // Icons for message actions
@@ -41,16 +39,15 @@ export default function SessionDetailPage() {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
   const [translatingMessageId, setTranslatingMessageId] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
   
   // Input states
   const [inputText, setInputText] = useState('');
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
 
@@ -131,6 +128,7 @@ export default function SessionDetailPage() {
 
       // 2. Send consult if exists
       if (text) {
+          setIsThinking(true);
           await messageApi.sendConsultMessage({ sessionId, content: text });
       }
 
@@ -148,6 +146,7 @@ export default function SessionDetailPage() {
       MessagePlugin.error(error.message || 'Send failed.');
     } finally {
       setIsSending(false);
+      setIsThinking(false);
     }
   };
 
@@ -187,7 +186,6 @@ export default function SessionDetailPage() {
 
   // Handle Translate
   const handleTranslate = async (messageId: string) => {
-    setIsTranslating(true);
     setTranslatingMessageId(messageId);
     try {
       await translateApi.translateMessage({
@@ -200,9 +198,7 @@ export default function SessionDetailPage() {
     } catch (error: any) {
       MessagePlugin.error(error.message || '翻译失败');
     } finally {
-      setIsTranslating(false);
       setTranslatingMessageId(null);
-      setSelectedMessageId(null);
     }
   };
 
@@ -210,38 +206,39 @@ export default function SessionDetailPage() {
   const handleConsult = async () => {
     const text = inputText.trim();
     if (!text) {
-        MessagePlugin.error('请输入咨询内容');
+        MessagePlugin.error('???????');
         return;
     }
     setIsConsulting(true);
+    setIsThinking(true);
     try {
       await messageApi.sendConsultMessage({ sessionId, content: text });
       setInputText('');
       await loadData();
     } catch (error: any) {
-      MessagePlugin.error(error.message || '咨询失败');
+      MessagePlugin.error(error.message || '????');
     } finally {
       setIsConsulting(false);
+      setIsThinking(false);
     }
   };
+
 
   // Handle Delete
   const handleDeleteMessage = async (messageId: string) => {
     try {
       await messageApi.deleteMessage(messageId);
       setMessages(prev => prev.filter(m => m.messageId !== messageId));
-      MessagePlugin.success('删除成功');
+      MessagePlugin.success('????');
     } catch (error: any) {
-      MessagePlugin.error(error.message || '删除失败');
-    } finally {
-      setSelectedMessageId(null);
+      MessagePlugin.error(error.message || '????');
     }
   };
+
 
   const handleCopy = (content: string) => {
       navigator.clipboard.writeText(content);
       MessagePlugin.success('已复制');
-      setSelectedMessageId(null);
   };
 
   // Avatars
@@ -258,9 +255,21 @@ export default function SessionDetailPage() {
 
   if (isLoading && messages.length === 0) {
     return (
-        <div className="h-full flex items-center justify-center bg-slate-900">
-            <Loading text="正在连接..." />
+      <div className="h-full flex flex-col bg-slate-900">
+        <div className="flex-1 overflow-y-auto pt-10 px-4">
+          <div className="max-w-3xl mx-auto space-y-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={`flex gap-3 ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
+                <div className="h-10 w-10 rounded-full bg-slate-800/70 animate-pulse" />
+                <div className="flex-1">
+                  <div className={`h-3 w-24 mb-2 rounded bg-slate-800/60 animate-pulse ${i % 2 === 0 ? '' : 'ml-auto'}`} />
+                  <div className={`h-14 w-3/4 rounded-2xl bg-slate-800/60 animate-pulse ${i % 2 === 0 ? '' : 'ml-auto'}`} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
     );
   }
 
@@ -283,12 +292,22 @@ export default function SessionDetailPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar pt-16 lg:pt-4 pb-4 px-4 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-6">
           {historyMessages.length === 0 && consultMessages.length === 0 ? (
-            <div className="text-center py-20 opacity-50 animate-fade-in-up">
-                <div className="w-16 h-16 bg-white/5 rounded-full mx-auto flex items-center justify-center mb-4">
-                     <ChatIcon size="32px" className="text-slate-400" />
+            <div className="text-center py-16 animate-fade-in-up">
+                <div className="w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-gradient-to-br from-slate-700/40 to-slate-900/80 border border-white/10 shadow-lg shadow-black/30">
+                     <ChatIcon size="32px" className="text-slate-300" />
                 </div>
-                <h2 className="text-xl font-medium text-slate-200 mb-2">开始与 {session.friendName} 的对话</h2>
-                <p className="text-sm text-slate-500">这里是你们的专属空间</p>
+                <h2 className="text-xl font-medium text-slate-200 mb-2">Start with {session.friendName}</h2>
+                <p className="text-sm text-slate-500">Upload a screenshot or ask a question to begin.</p>
+                <div className="mt-6 mx-auto grid max-w-md gap-3 text-left sm:grid-cols-2">
+                  <div className="rounded-xl border border-white/10 bg-slate-800/60 p-4 shadow-sm">
+                    <div className="text-[11px] uppercase tracking-wider text-slate-500">Step 1</div>
+                    <div className="mt-1 text-sm text-slate-200">Paste a chat screenshot</div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-slate-800/60 p-4 shadow-sm">
+                    <div className="text-[11px] uppercase tracking-wider text-slate-500">Step 2</div>
+                    <div className="mt-1 text-sm text-slate-200">Ask for insights or reply tips</div>
+                  </div>
+                </div>
             </div>
           ) : (
             historyMessages.map((msg, index) => {
@@ -296,8 +315,8 @@ export default function SessionDetailPage() {
                return (
                 <div
                     key={msg.messageId || index}
-                    className={`flex gap-4 animate-message-slide-in ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className={`flex gap-3 animate-message-appear ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                    style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
                 >
                     {/* Avatar */}
                     <div className="flex-shrink-0 mt-1">
@@ -322,15 +341,17 @@ export default function SessionDetailPage() {
 
                         <div className="relative group">
                             {/* Message Bubble */}
-                            <div 
+                            <div
                                 className={`
-                                    rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm relative z-10
-                                    ${isUser 
-                                        ? 'bg-blue-600 text-white rounded-tr-sm' 
-                                        : 'bg-slate-800 text-slate-200 border border-white/5 rounded-tl-sm'
+                                    rounded-2xl px-4 py-3 text-sm leading-relaxed relative z-10
+                                    transition-all duration-200 ease-out
+                                    hover:-translate-y-0.5
+                                    ${isUser
+                                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-sm shadow-lg shadow-blue-900/30 hover:shadow-xl hover:shadow-blue-900/40'
+                                        : 'bg-slate-800/90 backdrop-blur-sm text-slate-200 border border-white/10 rounded-tl-sm shadow-lg shadow-black/20 hover:shadow-xl hover:bg-slate-800'
                                     }
-                                    ${msg.msgType === 'TRANSLATE' ? '!bg-amber-900/30 !border-amber-700/50 !text-amber-100' : ''}
-                                    ${msg.msgType === 'CONSULT' ? '!bg-indigo-900/30 !border-indigo-700/50 !text-indigo-100' : ''}
+                                    ${msg.msgType === 'TRANSLATE' ? '!bg-gradient-to-br !from-amber-900/40 !to-amber-800/30 !border-amber-600/30 !text-amber-100 !shadow-amber-900/20' : ''}
+                                    ${msg.msgType === 'CONSULT' ? '!bg-gradient-to-br !from-indigo-900/40 !to-indigo-800/30 !border-indigo-600/30 !text-indigo-100 !shadow-indigo-900/20' : ''}
                                 `}
                             >
                                 {msg.imageUrl ? (
@@ -356,9 +377,24 @@ export default function SessionDetailPage() {
                                 </div>
                             )}
 
+                            {translatingMessageId === msg.messageId && (
+                              <div className="mt-2 flex items-center gap-2 text-xs text-amber-300">
+                                <span>Translating</span>
+                                <span className="flex items-center gap-1">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-thinking-dot" style={{ animationDelay: '0ms' }} />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-thinking-dot" style={{ animationDelay: '150ms' }} />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-thinking-dot" style={{ animationDelay: '300ms' }} />
+                                </span>
+                              </div>
+                            )}
+
                             {/* Action Tools (Visible on Hover) */}
                             <div className={`
-                                absolute top-0 ${isUser ? '-left-24' : '-right-24'} h-full flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity px-2
+                                absolute top-1/2 -translate-y-1/2 ${isUser ? '-left-24' : '-right-24'}
+                                flex items-center gap-1 px-2 py-1
+                                opacity-0 group-hover:opacity-100 transition-all duration-200
+                                ${isUser ? 'translate-x-2' : '-translate-x-2'} group-hover:translate-x-0
+                                rounded-full bg-slate-900/60 border border-white/10 backdrop-blur-sm shadow-lg shadow-black/30
                             `}>
                                 {msg.content && (
                                     <button 
@@ -433,6 +469,18 @@ export default function SessionDetailPage() {
               })}
             </div>
           )}
+          {isThinking && (
+            <div className="flex justify-start">
+              <div className="inline-flex items-center gap-2 text-xs text-slate-300 bg-slate-800/60 border border-white/10 rounded-full px-3 py-1.5">
+                <span>AI thinking</span>
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-thinking-dot" style={{ animationDelay: '0ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-thinking-dot" style={{ animationDelay: '150ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-thinking-dot" style={{ animationDelay: '300ms' }} />
+                </span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} className="h-4" />
         </div>
       </div>
@@ -465,7 +513,7 @@ export default function SessionDetailPage() {
              </div>
 
              {/* Main Input Box */}
-             <div className="relative bg-slate-800 rounded-2xl border border-white/10 shadow-lg focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 transition-all overflow-hidden">
+             <div className="relative bg-slate-800 rounded-2xl border border-white/10 shadow-lg focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 focus-within:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_30px_rgba(59,130,246,0.2)] transition-all overflow-hidden">
                 <input
                     ref={fileInputRef}
                     type="file"
@@ -527,11 +575,12 @@ export default function SessionDetailPage() {
                         onClick={handleSendMessage}
                         disabled={(!inputText.trim() && !pendingFile) || isSending}
                         className={`
-                            p-2 rounded-xl transition-all duration-200 mb-0.5
+                            p-2 rounded-xl transition-all duration-200 mb-0.5 btn-press
                             ${(inputText.trim() || pendingFile)
-                                ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50' 
+                                ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50'
                                 : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                             }
+                            ${(inputText.trim() || pendingFile) && !isSending ? 'hover:-translate-y-0.5 animate-pulse-glow' : ''}
                         `}
                      >
                         {isSending ? (
@@ -543,6 +592,11 @@ export default function SessionDetailPage() {
                             <SendIcon size="20px" />
                         )}
                      </button>
+                </div>
+
+                <div className="flex items-center justify-between px-4 pb-3 text-[11px] text-slate-500">
+                  <span>{pendingFile ? '1 image ready' : 'Paste or upload image'}</span>
+                  <span className={inputText.length > 500 ? 'text-amber-400' : ''}>{inputText.length} chars</span>
                 </div>
              </div>
              

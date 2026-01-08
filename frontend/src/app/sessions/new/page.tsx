@@ -6,16 +6,17 @@ import { MessagePlugin, Avatar } from 'tdesign-react';
 import { UploadIcon, UserIcon, ArrowLeftIcon } from 'tdesign-icons-react';
 import { useUserStore } from '@/stores/user';
 import { sessionApi } from '@/services/api/session';
+import { profileApi } from '@/services/api/profile';
 import { uploadApi } from '@/services/api/upload';
 import { getUserAvatar } from '@/lib/avatar';
 import { ROUTES } from '@/constants/routes';
-import type { Gender } from '@/types/models';
+type Relation = '' | '部门同事' | '直属上级' | '下属' | '合作方';
 
 export default function NewSessionPage() {
   const router = useRouter();
   const { profile } = useUserStore();
   const [friendName, setFriendName] = useState('');
-  const [friendGender, setFriendGender] = useState<Gender>('');
+  const [friendRelation, setFriendRelation] = useState<Relation>('');
   const [friendAvatar, setFriendAvatar] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -44,12 +45,12 @@ export default function NewSessionPage() {
   // Create Session
   const handleSubmit = async () => {
     if (!friendName.trim()) {
-      MessagePlugin.error('请输入对方昵称');
+      MessagePlugin.error('请输入对方姓名');
       return;
     }
 
-    if (!friendGender) {
-      MessagePlugin.error('请选择对方性别');
+    if (!friendRelation) {
+      MessagePlugin.error('请选择对方关系');
       return;
     }
 
@@ -58,10 +59,20 @@ export default function NewSessionPage() {
       const session = await sessionApi.createSession({
         profile: {
           name: friendName.trim(),
-          gender: friendGender,
           avatar: friendAvatar || undefined,
         },
       });
+
+      if (session.profileId) {
+        try {
+          await profileApi.updateProfile({
+            id: session.profileId,
+            custom: [{ name: '关系', value: friendRelation }],
+          });
+        } catch (error: any) {
+          console.warn('Failed to update relation:', error);
+        }
+      }
 
       MessagePlugin.success('创建成功');
       router.push(ROUTES.SESSION_DETAIL(session.sessionId));
@@ -73,7 +84,7 @@ export default function NewSessionPage() {
   };
 
   // Preview Avatar logic
-  const previewImage = friendAvatar || getUserAvatar('', friendGender, profile?.gender, true);
+  const previewImage = friendAvatar || getUserAvatar('', '', profile?.gender, true);
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
@@ -132,7 +143,7 @@ export default function NewSessionPage() {
           <div className="space-y-6">
             {/* Name Input */}
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">对方昵称</label>
+                <label className="text-sm font-medium text-slate-300 ml-1">对方姓名</label>
                 <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
                         <UserIcon />
@@ -141,53 +152,42 @@ export default function NewSessionPage() {
                         type="text"
                         value={friendName}
                         onChange={(e) => setFriendName(e.target.value)}
-                        placeholder="例如：面试官、产品经理..."
+                        placeholder="例如：李经理、张主管..."
                         maxLength={20}
                         className="w-full bg-slate-900/50 text-white placeholder-slate-500 border border-white/10 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
                     />
                 </div>
             </div>
 
-            {/* Gender Selection */}
+            {/* Relation Selection */}
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">对方性别</label>
+                <label className="text-sm font-medium text-slate-300 ml-1">对方关系</label>
                 <div className="grid grid-cols-2 gap-4">
-                    <button
-                        onClick={() => setFriendGender('male')}
+                    {['部门同事', '直属上级', '下属', '合作方'].map((relation) => (
+                      <button
+                        key={relation}
+                        onClick={() => setFriendRelation(relation as Relation)}
                         className={`
                             flex items-center justify-center gap-2 py-3 px-4 rounded-xl border transition-all duration-200
-                            ${friendGender === 'male' 
-                                ? 'bg-blue-600/20 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
+                            ${friendRelation === relation
+                                ? 'bg-blue-600/20 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.2)]'
                                 : 'bg-slate-900/50 border-white/10 text-slate-400 hover:bg-slate-800 hover:border-white/20'
                             }
                         `}
-                    >
-                        <span className="text-xl">👨</span>
-                        <span>男性</span>
-                    </button>
-                    <button
-                        onClick={() => setFriendGender('female')}
-                        className={`
-                            flex items-center justify-center gap-2 py-3 px-4 rounded-xl border transition-all duration-200
-                            ${friendGender === 'female' 
-                                ? 'bg-pink-600/20 border-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.2)]' 
-                                : 'bg-slate-900/50 border-white/10 text-slate-400 hover:bg-slate-800 hover:border-white/20'
-                            }
-                        `}
-                    >
-                        <span className="text-xl">👩</span>
-                        <span>女性</span>
-                    </button>
+                      >
+                        <span className="text-sm">{relation}</span>
+                      </button>
+                    ))}
                 </div>
             </div>
 
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              disabled={!friendName.trim() || !friendGender || isSubmitting}
+              disabled={!friendName.trim() || !friendRelation || isSubmitting}
               className={`
                 w-full mt-6 py-3.5 rounded-xl font-semibold text-white transition-all duration-200 shadow-lg
-                ${!friendName.trim() || !friendGender || isSubmitting
+                ${!friendName.trim() || !friendRelation || isSubmitting
                     ? 'bg-slate-700 text-slate-500 cursor-not-allowed shadow-none'
                     : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]'
                 }
