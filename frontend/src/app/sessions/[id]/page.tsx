@@ -45,8 +45,7 @@ export default function SessionDetailPage() {
   
   // Input states
   const [inputText, setInputText] = useState('');
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
@@ -83,9 +82,6 @@ export default function SessionDetailPage() {
 
   useEffect(() => {
     loadData();
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
   }, [sessionId]);
 
   useEffect(() => {
@@ -93,60 +89,59 @@ export default function SessionDetailPage() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     shouldScrollToBottom.current = true; // 重置为默认值
-  }, [messages, pendingFile]);
+  }, [messages]);
 
   // Handle Send
-  const handleSendMessage = async () => {
-    const text = inputText.trim();
-    if (!text && !pendingFile) {
-      MessagePlugin.error('Please enter a message or select an image.');
-      return;
-    }
-
-    setIsSending(true);
-
+  const sendConsultMessage = async (text: string, setBusy: (v: boolean) => void) => {
+    setBusy(true);
+    setIsThinking(true);
     try {
-      // 1. Upload and parse image if exists
-      if (pendingFile) {
-        try {
-            const uploadResult = await uploadApi.uploadChatImage(pendingFile);
-            let imageKey = uploadResult.url || uploadResult.publicUrl;
-            if (imageKey && imageKey.startsWith('http')) {
-              try {
-                imageKey = decodeURIComponent(new URL(imageKey).pathname).replace(/^\/+/, '');
-              } catch {}
-            }
-            if (!imageKey) {
-              throw new Error('Missing image key');
-            }
-            await messageApi.parseImageMessages(sessionId, imageKey);
-        } catch (error: any) {
-            console.error('Image upload failed', error);
-            MessagePlugin.error('Image send failed.');
-        }
-      }
-
-      // 2. Send consult if exists
-      if (text) {
-          setIsThinking(true);
-          await messageApi.sendConsultMessage({ sessionId, content: text });
-      }
-
-      // Reset states
+      await messageApi.sendConsultMessage({ sessionId, content: text });
       setInputText('');
-      setPendingFile(null);
-      setPreviewUrl('');
       if (textAreaRef.current) {
-          textAreaRef.current.style.height = 'auto';
-          textAreaRef.current.style.minHeight = '40px';
+        textAreaRef.current.style.height = 'auto';
+        textAreaRef.current.style.minHeight = '40px';
       }
-
       await loadData();
     } catch (error: any) {
-      MessagePlugin.error(error.message || 'Send failed.');
+      MessagePlugin.error(error.message || '发送失败');
     } finally {
-      setIsSending(false);
+      setBusy(false);
       setIsThinking(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    const text = inputText.trim();
+    if (!text) {
+      MessagePlugin.error('请输入消息');
+      return;
+    }
+    await sendConsultMessage(text, setIsSending);
+  };
+
+  const uploadAndParseImage = async (file: File) => {
+    if (isUploadingImage) return;
+    setIsUploadingImage(true);
+    try {
+      const uploadResult = await uploadApi.uploadChatImage(file);
+      let imageKey = uploadResult.url || uploadResult.publicUrl;
+      if (imageKey && imageKey.startsWith('http')) {
+        try {
+          imageKey = decodeURIComponent(new URL(imageKey).pathname).replace(/^\/+/, '');
+        } catch {}
+      }
+      if (!imageKey) {
+        throw new Error('Missing image key');
+      }
+      await messageApi.parseImageMessages(sessionId, imageKey);
+      await loadData();
+    } catch (error: any) {
+      console.error('Image upload failed', error);
+      MessagePlugin.error(error.message || '图片上传失败');
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -154,8 +149,7 @@ export default function SessionDetailPage() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFilePreview(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    void uploadAndParseImage(file);
   };
 
   // Handle Paste
@@ -165,23 +159,10 @@ export default function SessionDetailPage() {
       if (items[i].type.indexOf('image') !== -1) {
         e.preventDefault();
         const file = items[i].getAsFile();
-        if (file) setFilePreview(file);
+        if (file) void uploadAndParseImage(file);
         return;
       }
     }
-  };
-
-  const setFilePreview = (file: File) => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = URL.createObjectURL(file);
-      setPendingFile(file);
-      setPreviewUrl(url);
-  };
-
-  const clearPreview = () => {
-      setPendingFile(null);
-      setPreviewUrl('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // Handle Translate
@@ -206,21 +187,10 @@ export default function SessionDetailPage() {
   const handleConsult = async () => {
     const text = inputText.trim();
     if (!text) {
-        MessagePlugin.error('???????');
+        MessagePlugin.error('请输入问题');
         return;
     }
-    setIsConsulting(true);
-    setIsThinking(true);
-    try {
-      await messageApi.sendConsultMessage({ sessionId, content: text });
-      setInputText('');
-      await loadData();
-    } catch (error: any) {
-      MessagePlugin.error(error.message || '????');
-    } finally {
-      setIsConsulting(false);
-      setIsThinking(false);
-    }
+    await sendConsultMessage(text, setIsConsulting);
   };
 
 
@@ -275,8 +245,18 @@ export default function SessionDetailPage() {
 
   if (!session) return null;
 
-  const historyMessages = messages.filter((msg) => msg.msgType !== 'CONSULT');
-  const consultMessages = messages.filter((msg) => msg.msgType === 'CONSULT');
+  const getMessageTime = (msg: MessageType) => {
+    const value = msg.msgAt || msg.createdAt || msg.updatedAt;
+    if (!value) return 0;
+    const time = Date.parse(value);
+    return Number.isNaN(time) ? 0 : time;
+  };
+
+  const sortedMessages = [...messages].sort((a, b) => {
+    const diff = getMessageTime(a) - getMessageTime(b);
+    if (diff !== 0) return diff;
+    return (a.messageId || '').localeCompare(b.messageId || '');
+  });
 
   return (
     <div className="h-full flex flex-col bg-slate-900 relative">
@@ -291,7 +271,7 @@ export default function SessionDetailPage() {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pt-16 lg:pt-4 pb-4 px-4 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-6">
-          {historyMessages.length === 0 && consultMessages.length === 0 ? (
+          {sortedMessages.length === 0 ? (
             <div className="text-center py-16 animate-fade-in-up">
                 <div className="w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-gradient-to-br from-slate-700/40 to-slate-900/80 border border-white/10 shadow-lg shadow-black/30">
                      <ChatIcon size="32px" className="text-slate-300" />
@@ -310,8 +290,30 @@ export default function SessionDetailPage() {
                 </div>
             </div>
           ) : (
-            historyMessages.map((msg, index) => {
+            sortedMessages.map((msg, index) => {
                const isUser = msg.role === 'SELF' || msg.role === 'USER';
+               if (msg.msgType === 'CONSULT') {
+                return (
+                  <div
+                    key={msg.messageId || `consult-${index}`}
+                    className={`flex animate-message-appear ${isUser ? 'justify-end' : 'justify-start'}`}
+                    style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
+                  >
+                    <div
+                      className={`
+                        max-w-[85%] lg:max-w-[75%] text-sm leading-relaxed
+                        ${isUser ? 'bg-slate-200 text-slate-900' : 'text-slate-200'}
+                        ${isUser ? 'rounded-2xl rounded-tr-sm px-4 py-2' : 'px-1'}
+                      `}
+                    >
+                      <div className="markdown prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>{msg.content || ''}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                );
+               }
+
                return (
                 <div
                     key={msg.messageId || index}
@@ -335,7 +337,7 @@ export default function SessionDetailPage() {
                                 {isUser ? 'You' : (msg.role === 'AI' ? 'AI Assistant' : session.friendName)}
                              </span>
                              <span className="text-xs text-slate-600">
-                                {formatRelativeTime(msg.createdAt || msg.msgAt || new Date())}
+                                {formatRelativeTime(msg.msgAt || msg.createdAt || new Date())}
                              </span>
                         </div>
 
@@ -351,7 +353,6 @@ export default function SessionDetailPage() {
                                         : 'bg-slate-800/90 backdrop-blur-sm text-slate-200 border border-white/10 rounded-tl-sm shadow-lg shadow-black/20 hover:shadow-xl hover:bg-slate-800'
                                     }
                                     ${msg.msgType === 'TRANSLATE' ? '!bg-gradient-to-br !from-amber-900/40 !to-amber-800/30 !border-amber-600/30 !text-amber-100 !shadow-amber-900/20' : ''}
-                                    ${msg.msgType === 'CONSULT' ? '!bg-gradient-to-br !from-indigo-900/40 !to-indigo-800/30 !border-indigo-600/30 !text-indigo-100 !shadow-indigo-900/20' : ''}
                                 `}
                             >
                                 {msg.imageUrl ? (
@@ -433,41 +434,15 @@ export default function SessionDetailPage() {
                         </div>
                         
                         {/* Type Labels */}
-                        {msg.msgType !== 'HISTORY' && (
+                        {msg.msgType === 'TRANSLATE' && (
                             <span className="text-[10px] mt-1 text-slate-500 uppercase tracking-wider px-1">
-                                {msg.msgType === 'TRANSLATE' && 'AI 翻译'}
-                                {msg.msgType === 'CONSULT' && 'AI 咨询'}
+                                AI 翻译
                             </span>
                         )}
                     </div>
                 </div>
                );
             })
-          )}
-          {consultMessages.length > 0 && (
-            <div className="pt-4 border-t border-white/5 space-y-3">
-              {consultMessages.map((msg, index) => {
-                const isUser = msg.role === 'USER' || msg.role === 'SELF';
-                return (
-                  <div
-                    key={msg.messageId || `consult-${index}`}
-                    className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`
-                        max-w-[85%] lg:max-w-[75%] text-sm leading-relaxed
-                        ${isUser ? 'bg-slate-200 text-slate-900' : 'text-slate-200'}
-                        ${isUser ? 'rounded-2xl rounded-tr-sm px-4 py-2' : 'px-1'}
-                      `}
-                    >
-                      <div className="markdown prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown>{msg.content || ''}</ReactMarkdown>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           )}
           {isThinking && (
             <div className="flex justify-start">
@@ -522,25 +497,6 @@ export default function SessionDetailPage() {
                     onChange={handleImageSelect}
                 />
 
-                {/* Image Preview Area */}
-                {pendingFile && (
-                    <div className="px-4 pt-4 pb-2">
-                        <div className="relative inline-block group">
-                            <img 
-                                src={previewUrl} 
-                                alt="Preview" 
-                                className="h-20 w-auto rounded-lg border border-white/10 object-cover"
-                            />
-                            <button 
-                                onClick={clearPreview}
-                                className="absolute -top-2 -right-2 bg-slate-700 text-white rounded-full p-1 hover:bg-red-500 transition-colors shadow-md"
-                            >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
-                        </div>
-                    </div>
-                )}
-                
                 <div className="flex items-end p-3 gap-2">
                      <button 
                         onClick={() => fileInputRef.current?.click()}
@@ -573,14 +529,14 @@ export default function SessionDetailPage() {
                      
                      <button
                         onClick={handleSendMessage}
-                        disabled={(!inputText.trim() && !pendingFile) || isSending}
+                        disabled={!inputText.trim() || isSending}
                         className={`
                             p-2 rounded-xl transition-all duration-200 mb-0.5 btn-press
-                            ${(inputText.trim() || pendingFile)
+                            ${inputText.trim()
                                 ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50'
                                 : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                             }
-                            ${(inputText.trim() || pendingFile) && !isSending ? 'hover:-translate-y-0.5 animate-pulse-glow' : ''}
+                            ${inputText.trim() && !isSending ? 'hover:-translate-y-0.5 animate-pulse-glow' : ''}
                         `}
                      >
                         {isSending ? (
@@ -595,7 +551,7 @@ export default function SessionDetailPage() {
                 </div>
 
                 <div className="flex items-center justify-between px-4 pb-3 text-[11px] text-slate-500">
-                  <span>{pendingFile ? '1 image ready' : 'Paste or upload image'}</span>
+                  <span>{isUploadingImage ? '图片上传中...' : '粘贴或上传图片会自动解析'}</span>
                   <span className={inputText.length > 500 ? 'text-amber-400' : ''}>{inputText.length} chars</span>
                 </div>
              </div>
