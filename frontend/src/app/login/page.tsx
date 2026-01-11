@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessagePlugin } from 'tdesign-react';
 import { useAuthStore } from '@/stores/auth';
-import { useUserStore } from '@/stores/user';
 import { authApi } from '@/services/api/auth';
 import { validatePhone, validateVerifyCode } from '@/services/utils/validator';
 import { ROUTES } from '@/constants/routes';
@@ -21,7 +20,6 @@ const ShieldCheckIcon = ({ className }: { className?: string }) => (
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const { profile } = useUserStore();
 
   const [phone, setPhone] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
@@ -87,13 +85,7 @@ export default function LoginPage() {
       await login(phone, verifyCode);
       MessagePlugin.success('登录成功');
 
-      // 判断是否需要性别选择
-      const currentProfile = useUserStore.getState().profile;
-      if (!currentProfile?.gender) {
-        router.push(ROUTES.GENDER);
-      } else {
-        router.push(ROUTES.SESSIONS);
-      }
+      router.push(ROUTES.SESSIONS);
     } catch (error: any) {
       MessagePlugin.error(error.message || '登录失败');
     } finally {

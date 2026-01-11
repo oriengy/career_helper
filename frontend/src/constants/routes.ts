@@ -11,7 +11,6 @@ export const ROUTES = {
   PROFILE: '/profile',
   PROFILE_EDIT: '/profile/edit',
   PROFILE_EDIT_FRIEND: (id: string) => `/profile/${id}/edit`,
-  GENDER: '/gender',
 } as const;
 
 // 不需要认证的路由白名单

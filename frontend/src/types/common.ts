@@ -33,5 +33,4 @@ export enum RoutePath {
   PROFILE = '/profile',
   PROFILE_EDIT = '/profile/edit',
   PROFILE_EDIT_FRIEND = '/profile/[id]/edit',
-  GENDER = '/gender',
 }
