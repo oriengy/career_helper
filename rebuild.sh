@@ -6,8 +6,7 @@ COMPOSE_FILE="$ROOT_DIR/docker-compose.yml"
 
 cd "$ROOT_DIR"
 
-echo "[1/4] Pull latest code"
-git pull
+echo "[1/4] haha"
 
 echo "[2/4] Stop existing containers"
 docker compose -f "$COMPOSE_FILE" down --remove-orphans
