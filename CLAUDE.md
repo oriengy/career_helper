@@ -107,9 +107,9 @@ docker compose down
 
 **Common Issues**:
 - Port conflicts: See `PORT-ISSUE-SOLUTIONS.md` for quick fixes
-- Auto-fix script: `./deploy/fix-port-issues.sh`
-- Alternative ports: Use `deploy/docker-compose.alternative-ports.yml`
-- Production with Nginx: Use `deploy/docker-compose.nginx.yml`
+- Auto-fix script: `./fix-port-issues.sh`
+- Alternative ports: Use `docker-compose.alternative-ports.yml`
+- Production with Nginx: Use `docker-compose.yml`
 
 ## Key Technical Details
 

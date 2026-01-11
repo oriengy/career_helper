@@ -4,13 +4,13 @@
 services:
   backend:
     build:
-      context: ../chat_server-main/app_server
+      context: ./chat_server-main/app_server
       dockerfile: Dockerfile
     # 只在内部网络暴露端口，不映射到主机
     expose:
       - "8082"
     volumes:
-      - ../chat_server-main/app_server/config.yaml:/app/config.yaml:ro
+      - ./chat_server-main/app_server/config.yaml:/app/config.yaml:ro
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
@@ -19,7 +19,7 @@ services:
 
   frontend:
     build:
-      context: ../frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         # 注意：如果使用 Nginx，API 请求应该通过 Nginx 代理

@@ -62,11 +62,11 @@ docker compose up -d
 
 ### 方案 2：备用端口（端口冲突时）
 
-使用 `deploy/docker-compose.alternative-ports.yml`：
+使用 `docker-compose.alternative-ports.yml`：
 
 ```bash
 cd /www/wwwroot/career_helper-main
-docker compose -f deploy/docker-compose.alternative-ports.yml up -d
+docker compose -f docker-compose.alternative-ports.yml up -d
 ```
 
 - 前端：http://localhost:3001
@@ -74,13 +74,13 @@ docker compose -f deploy/docker-compose.alternative-ports.yml up -d
 
 ### 方案 3：Nginx 反向代理（推荐生产环境）
 
-1. 编辑 `deploy/nginx.conf`，替换 `your-domain.com` 为你的域名
+1. 编辑 `nginx.conf`，替换 `your-domain.com` 为你的域名
 
 2. 启动服务：
 
 ```bash
 cd /www/wwwroot/career_helper-main
-docker compose -f deploy/docker-compose.nginx.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 3. 访问：
