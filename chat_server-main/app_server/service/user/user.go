@@ -15,6 +15,8 @@ import (
 	"log/slog"
 	"time"
 
+	"app_server/domain"
+
 	connect "connectrpc.com/connect"
 )
 
@@ -71,6 +73,8 @@ func (s *UserService) WxUserLogin(ctx context.Context, connectReq *connect.Reque
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("generate token failed: %v", err))
 	}
 
+	ensureDemoData(ctx, u.ID)
+
 	return connect.NewResponse(&user.WxUserLoginResponse{
 		Token: token,
 	}), nil
@@ -112,11 +116,49 @@ func (s *UserService) PhoneLogin(ctx context.Context, connectReq *connect.Reques
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("生成token失败: %v", err))
 	}
 
+	ensureDemoData(ctx, u.ID)
+
 	slog.InfoContext(ctx, "phone login success", "phone", phone, "user_id", u.ID)
 
 	return connect.NewResponse(&user.PhoneLoginResponse{
 		Token: token,
 	}), nil
+}
+
+func ensureDemoData(ctx context.Context, userID uint) {
+	if userID == 0 {
+		return
+	}
+
+	var count int64
+	if err := db.GetDB().Model(&model.ChatMessage{}).
+		Where("user_id = ? AND JSON_CONTAINS(tags, '\"demo\"')", userID).
+		Count(&count).Error; err != nil {
+		slog.ErrorContext(ctx, "check demo messages error", "error", err)
+		return
+	}
+	if count > 0 {
+		return
+	}
+
+	var userModel model.User
+	if err := db.GetDB().First(&userModel, userID).Error; err != nil {
+		slog.WarnContext(ctx, "load user for demo failed", "error", err, "user_id", userID)
+		return
+	}
+	if userModel.ProfileID == 0 {
+		return
+	}
+
+	var profileModel model.Profile
+	if err := db.GetDB().First(&profileModel, userModel.ProfileID).Error; err != nil {
+		slog.WarnContext(ctx, "load profile for demo failed", "error", err, "profile_id", userModel.ProfileID)
+		return
+	}
+
+	if err := domain.CopyDemoDataForNewUser(ctx, &userModel, &profileModel); err != nil {
+		slog.ErrorContext(ctx, "failed to copy demo data for user", "error", err, "user_id", userID)
+	}
 }
 
 func (s *UserService) GetUserProfile(ctx context.Context, connectReq *connect.Request[user.GetUserProfileRequest]) (*connect.Response[user.GetUserProfileResponse], error) {
